@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NANU — CaminArte</title>
+
+<style>
+:root{
+  --bg1:#0a6b5a;
+  --bg2:#b34a14;
+  --text:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.72);
+  --accent:#ffe06a;
+  --radius:22px;
+  --shadow:0 20px 60px rgba(0,0,0,.22);
+  --glass:rgba(255,255,255,.10);
+  --stroke:rgba(255,255,255,.16);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:ui-rounded,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+
+body{
+  color:var(--text);
+  overflow-x:hidden;
+  background:#0a6b5a;
+}
+
+.wallpaper{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  background:
+    radial-gradient(1000px 700px at 20% 10%,rgba(255,255,255,.10),transparent 55%),
+    radial-gradient(900px 700px at 85% 20%,rgba(255,255,255,.08),transparent 60%),
+    linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 62%, var(--bg2) 100%);
+  background-attachment:fixed;
+}
+.wallpaper::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.14) 100%);
+  pointer-events:none;
+}
+
+.page{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity .28s ease, transform .28s ease;
+}
+.page.ready{opacity:1;transform:translateY(0)}
+.page.exiting{opacity:0;transform:translateY(10px)}
+
+.bg-orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.orb{
+  position:absolute;border-radius:999px;opacity:.14;mix-blend-mode:screen;will-change:transform;
+  background:
+    radial-gradient(circle at 30% 30%,rgba(255,255,255,.65),rgba(255,255,255,0) 60%),
+    radial-gradient(circle at 70% 70%,rgba(255,255,255,.35),rgba(255,255,255,0) 55%);
+  box-shadow:0 0 60px rgba(255,255,255,.08);
+  animation:float 10s ease-in-out infinite;
+}
+.orb.c1{background:radial-gradient(circle at 30% 30%,rgba(255,224,106,.70),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+.orb.c2{background:radial-gradient(circle at 30% 30%,rgba(120,255,225,.70),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+.orb.c3{background:radial-gradient(circle at 30% 30%,rgba(255,106,160,.65),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+@keyframes float{
+  0%,100%{transform:translate3d(var(--x1),var(--y1),0) scale(1)}
+  50%{transform:translate3d(var(--x2),var(--y2),0) scale(1.06)}
+}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:6;
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  backdrop-filter:blur(14px);
+  background:linear-gradient(180deg,rgba(10,30,28,.55),rgba(10,30,28,.18));
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  cursor:pointer;
+  user-select:none;
+}
+.logo-mini{
+  width:34px;height:34px;border-radius:12px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.12);
+  overflow:hidden;
+}
+.logo-mini img{width:100%;height:100%;object-fit:cover;display:block}
+.brand .name{font-weight:950;letter-spacing:.4px;line-height:1}
+.brand .sub{font-size:12px;color:var(--muted);font-weight:800;margin-top:2px}
+
+.btn{
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.92);
+  font-weight:950;
+  cursor:pointer;
+  transition:transform .14s ease, background .14s ease, border-color .14s ease;
+}
+.btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{
+  background:rgba(255,255,255,.92);
+  color:rgba(10,30,28,.95);
+  border:none;
+}
+.btn.primary span{color:var(--accent)}
+
+.wrap{
+  position:relative;
+  z-index:1;
+  width:min(1100px,94vw);
+  margin:22px auto 80px;
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  gap:18px;
+  align-items:start;
+  flex:1;
+}
+.glass{
+  border-radius:var(--radius);
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(12px);
+}
+.card{padding:22px 20px}
+
+.kicker{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.86);font-weight:950}
+.dot{width:10px;height:10px;border-radius:999px;box-shadow:0 0 18px rgba(255,255,255,.18)}
+.d-gold{background:rgba(255,224,106,.95)}
+h1{margin:10px 0 8px;font-size:clamp(30px,3.2vw,44px);letter-spacing:.2px}
+.lead{margin:0;color:rgba(255,255,255,.78);font-weight:850;line-height:1.6}
+
+.kpis{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{padding:12px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
+.kpi b{display:block;font-size:14px;letter-spacing:.2px}
+.kpi span{display:block;font-size:12px;color:rgba(255,255,255,.75);font-weight:800;margin-top:4px}
+
+.tabs{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+.tab{
+  padding:10px 12px;border-radius:999px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  color:rgba(255,255,255,.90);
+  font-weight:950;
+  cursor:pointer;
+  transition:transform .14s ease, background .14s ease, border-color .14s ease;
+  user-select:none;
+}
+.tab:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+.tab.active{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.26)}
+.tab:active{transform:translateY(1px)}
+
+.panel{
+  margin-top:12px;
+  padding:18px;
+  border-radius:18px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  overflow:hidden;
+  transition:opacity .18s ease, transform .18s ease;
+}
+.panel.fade-out{opacity:0;transform:translateY(6px)}
+.panel.fade-in{opacity:1;transform:translateY(0)}
+.p{margin:0;color:rgba(255,255,255,.82);font-weight:800;line-height:1.65}
+.panel ul{margin:12px 0 0;padding-left:18px}
+.panel li{margin:8px 0;color:rgba(255,255,255,.82);font-weight:800;line-height:1.45}
+
+.media{overflow:hidden}
+.media-head{
+  padding:14px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+.media-head b{font-size:14px;letter-spacing:.2px}
+.media-body{padding:14px 14px 18px}
+
+.video{
+  width:100%;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.14);
+  overflow:hidden;
+  background:rgba(0,0,0,.18);
+}
+.video video{width:100%;height:auto;display:block}
+
+.controls{
+  margin-top:12px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.pill{
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.92);
+  font-weight:950;
+  cursor:pointer;
+  transition:transform .14s ease, background .14s ease, border-color .14s ease;
+  user-select:none;
+}
+.pill:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+.pill:active{transform:translateY(1px)}
+.pill.primary{background:rgba(255,255,255,.92);color:rgba(10,30,28,.95);border:none}
+.pill.primary span{color:var(--accent)}
+
+.gallery{margin-top:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.shot{
+  border-radius:18px;border:1px solid rgba(255,255,255,.14);
+  overflow:hidden;background:rgba(255,255,255,.06);
+  aspect-ratio:16/10;
+  display:grid;place-items:center;
+  font-weight:950;color:rgba(255,255,255,.82);
+}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+
+@media (max-width:980px){
+  .wrap{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr}
+  .gallery{grid-template-columns:1fr}
+}
+</style>
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+
+<body>
+<div class="wallpaper"></div>
+
+<div class="page" id="page">
+  <div class="bg-orbs" id="bgOrbs"></div>
+
+  <header class="topbar">
+    <div class="brand" id="backHome" tabindex="0" role="button" aria-label="Volver a NANU">
+      <div class="logo-mini"><img src="assets/nanu-logo.png" alt=""></div>
+      <div>
+        <div class="name">NANU</div>
+        <div class="sub">Volver</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" id="prevBtn">Anterior</button>
+      <button class="btn primary" id="nextBtn"><span>Siguiente</span></button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="glass card">
+      <div class="kicker"><span class="dot d-gold"></span><span>AR & Cultura</span></div>
+      <h1>CaminArte</h1>
+      <p class="lead">
+        Mini museos en realidad aumentada. Explora piezas 3D, descubre datos breves y recorre escenas
+        con interacción simple para aprender de forma visual y divertida.
+      </p>
+
+      <div class="kpis">
+        <div class="kpi"><b>Objetivo</b><span>Aprender con exploración visual</span></div>
+        <div class="kpi"><b>Interacción</b><span>AR + objetos 3D</span></div>
+        <div class="kpi"><b>Enfoque</b><span>Curiosidad, cultura y juego</span></div>
+      </div>
+
+      <div class="tabs" id="tabs">
+        <div class="tab active" data-tab="que">Qué hace</div>
+        <div class="tab" data-tab="como">Cómo se usa</div>
+        <div class="tab" data-tab="beneficios">Beneficios</div>
+        <div class="tab" data-tab="contenido">Contenido</div>
+      </div>
+
+      <div class="panel fade-in" id="panel"></div>
+    </section>
+
+    <aside class="glass media">
+      <div class="media-head">
+        <b>Modelos 3D</b>
+        <span style="color:rgba(255,255,255,.70);font-weight:900;font-size:12px" id="modeLabel">Local</span>
+      </div>
+      <div class="media-body">
+        <div style="border-radius:18px;border:1px solid rgba(255,255,255,.14);overflow:hidden;background:#000">
+
+<model-viewer
+id="viewer"
+src="assets/alebrije.glb"
+ar
+ar-modes="webxr scene-viewer quick-look"
+camera-controls
+auto-rotate
+style="width:100%;height:320px;background:#000">
+
+</model-viewer>
+<div class="controls">
+
+<button class="pill" onclick="setModel('alebrije.glb')">
+Alebrije
+</button>
+
+<button class="pill" onclick="setModel('saturnv.glb')">
+Saturn V
+</button>
+
+<button class="pill" onclick="setModel('curiosity.glb')">
+Curiosity
+</button>
+
+<button class="pill" onclick="setModel('piramide.glb')">
+Chichén Itzá
+</button>
+
+</div>
+</div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+const page=document.getElementById("page")
+requestAnimationFrame(()=>page.classList.add("ready"))
+function goSmooth(url){
+  page.classList.add("exiting")
+  setTimeout(()=>{location.href=url},220)
+}
+
+function rand(min,max){return Math.random()*(max-min)+min}
+const bgOrbs=document.getElementById("bgOrbs")
+for(let i=0;i<14;i++){
+  const d=document.createElement("div")
+  d.className="orb "+(i%3===0?"c1":i%3===1?"c2":"c3")
+  const size=rand(180,520)
+  d.style.width=size+"px"
+  d.style.height=size+"px"
+  d.style.left=rand(-10,110)+"vw"
+  d.style.top=rand(-10,110)+"vh"
+  d.style.setProperty("--x1",rand(-40,40)+"px")
+  d.style.setProperty("--y1",rand(-40,40)+"px")
+  d.style.setProperty("--x2",rand(-80,80)+"px")
+  d.style.setProperty("--y2",rand(-80,80)+"px")
+  d.style.animationDuration=rand(8,16)+"s"
+  d.style.animationDelay=(-rand(0,12))+"s"
+  bgOrbs.appendChild(d)
+}
+
+const HOME="NANU.html#s2"
+const ROUTES={
+  senales:"senales.html",
+  logica:"logica.html",
+  camin:"camin.html",
+  dali:"dali.html",
+  eco:"eco.html",
+  mundos:"mundos.html"
+}
+const ORDER=["senales","logica","camin","dali","eco","mundos"]
+const CURRENT="camin"
+
+const TABS_DATA={
+  que:{
+    p:"CaminArte crea mini museos en realidad aumentada: muestra piezas 3D y datos cortos para que el usuario explore con curiosidad. El enfoque es educativo, visual y sin saturación de texto.",
+    items:[
+      "Exploración de objetos 3D en AR.",
+      "Fichas breves: nombre, época y dato interesante.",
+      "Interacción simple: tocar, rotar, acercar.",
+      "Recorridos por temas (arte, ciencia, historia)."
+    ]
+  },
+  como:{
+    p:"El usuario elige una colección y coloca la pieza en el espacio. Luego puede tocar para ver información y moverse alrededor para observar detalles. Controles mínimos para mantener inmersión.",
+    items:[
+      "Selecciona una colección o mini museo.",
+      "Apunta la cámara y coloca la pieza en el espacio.",
+      "Explora: rota, acerca y toca puntos interactivos.",
+      "Cambia de pieza o avanza al siguiente recorrido."
+    ]
+  },
+  beneficios:{
+    p:"Refuerza aprendizaje visual y curiosidad. La interacción espacial mejora atención, comprensión y memoria al asociar información con una experiencia concreta.",
+    items:[
+      "Aprendizaje significativo con experiencia 3D.",
+      "Mejora atención y exploración guiada.",
+      "Refuerza memoria al conectar dato + objeto.",
+      "Promueve motivación por descubrimiento."
+    ]
+  },
+  contenido:{
+    p:"Se puede ampliar con colecciones nuevas sin cambiar el flujo: solo agregas modelos, audios o textos breves. Ideal para crecer el catálogo de mini museos.",
+    items:[
+      "Colecciones: arte, animales, inventos, cultura local.",
+      "Piezas con hotspots y fichas cortas.",
+      "Audio opcional por pieza.",
+      "Rutas guiadas: 3–5 piezas por recorrido."
+    ]
+  }
+}
+
+const tabs=document.getElementById("tabs")
+const panel=document.getElementById("panel")
+
+function setActiveTab(key){
+  tabs.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===key))
+}
+function panelHTML(key){
+  const c=TABS_DATA[key] || TABS_DATA.que
+  const items=(c.items||[]).map(x=>`<li>${x}</li>`).join("")
+  return `<p class="p">${c.p||""}</p><ul>${items}</ul>`
+}
+function swapPanel(key){
+  setActiveTab(key)
+  panel.classList.remove("fade-in")
+  panel.classList.add("fade-out")
+  const html=panelHTML(key)
+  setTimeout(()=>{
+    panel.innerHTML=html
+    panel.classList.remove("fade-out")
+    panel.classList.add("fade-in")
+  },160)
+}
+panel.innerHTML=panelHTML("que")
+
+tabs.addEventListener("click",(e)=>{
+  const t=e.target.closest(".tab")
+  if(!t)return
+  swapPanel(t.dataset.tab)
+})
+
+function nav(delta){
+  const idx=ORDER.indexOf(CURRENT)
+  const next=ORDER[(idx+delta+ORDER.length)%ORDER.length]
+  goSmooth(ROUTES[next] || HOME)
+}
+document.getElementById("prevBtn").addEventListener("click",()=>nav(-1))
+document.getElementById("nextBtn").addEventListener("click",()=>nav(1))
+
+const backHome=document.getElementById("backHome")
+backHome.addEventListener("click",()=>goSmooth(HOME))
+backHome.addEventListener("keydown",(e)=>{
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();goSmooth(HOME)}
+})
+
+const modeLabel=document.getElementById("modeLabel")
+const videoWrap=document.getElementById("videoWrap")
+const base=videoWrap.innerHTML
+
+const lines=[
+  "Coloca una pieza en el plano y acércate para ver detalles.",
+  "Toca un hotspot para mostrar un dato corto.",
+  "Cambia de sala: arte, ciencia, historia, naturaleza.",
+  "Usa audio breve para narración por pieza."
+]
+
+document.getElementById("randomPoi").addEventListener("click",()=>{
+  const t=lines[Math.floor(Math.random()*lines.length)]
+  videoWrap.innerHTML=`<div style="padding:16px"><div style="font-weight:950;color:rgba(255,255,255,.92)">Detalle</div><div style="margin-top:10px;color:rgba(255,255,255,.82);font-weight:900;line-height:1.55">${t}</div></div>`
+  modeLabel.textContent="Detalle"
+})
+
+document.getElementById("reset").addEventListener("click",()=>{
+  videoWrap.innerHTML=base
+  modeLabel.textContent="Local"
+})
+
+document.getElementById("openApp").addEventListener("click",()=>{
+  location.href="nanu://camin"
+})
+function setModel(file){
+  document.getElementById("viewer").src = "assets/" + file
+}
+</script>
+</body>
+</html>

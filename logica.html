@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NANU — Cerebro Lógico</title>
+
+<style>
+:root{
+  --bg1:#2d0b6b;
+  --bg2:#0b5a3f;
+  --text:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.72);
+  --accent:#ff7a3d;
+  --radius:22px;
+  --shadow:0 20px 60px rgba(0,0,0,.22);
+  --glass:rgba(255,255,255,.10);
+  --stroke:rgba(255,255,255,.16);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:ui-rounded,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+
+body{
+  color:var(--text);
+  overflow-x:hidden;
+  background:#0b5a3f;
+}
+
+.wallpaper{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  background:
+    radial-gradient(1000px 700px at 20% 10%,rgba(255,255,255,.10),transparent 55%),
+    radial-gradient(900px 700px at 85% 20%,rgba(255,255,255,.08),transparent 60%),
+    linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 60%, var(--bg2) 100%);
+  background-attachment:fixed;
+}
+.wallpaper::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.14) 100%);
+  pointer-events:none;
+}
+
+.page{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity .28s ease, transform .28s ease;
+}
+.page.ready{opacity:1;transform:translateY(0)}
+.page.exiting{opacity:0;transform:translateY(10px)}
+
+.bg-orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.orb{
+  position:absolute;border-radius:999px;opacity:.14;mix-blend-mode:screen;will-change:transform;
+  background:
+    radial-gradient(circle at 30% 30%,rgba(255,255,255,.65),rgba(255,255,255,0) 60%),
+    radial-gradient(circle at 70% 70%,rgba(255,255,255,.35),rgba(255,255,255,0) 55%);
+  box-shadow:0 0 60px rgba(255,255,255,.08);
+  animation:float 10s ease-in-out infinite;
+}
+.orb.c1{background:radial-gradient(circle at 30% 30%,rgba(255,122,61,.75),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+.orb.c2{background:radial-gradient(circle at 30% 30%,rgba(120,255,225,.70),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+.orb.c3{background:radial-gradient(circle at 30% 30%,rgba(170,120,255,.70),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+@keyframes float{
+  0%,100%{transform:translate3d(var(--x1),var(--y1),0) scale(1)}
+  50%{transform:translate3d(var(--x2),var(--y2),0) scale(1.06)}
+}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:6;
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  backdrop-filter:blur(14px);
+  background:linear-gradient(180deg,rgba(18,12,30,.55),rgba(18,12,30,.18));
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  cursor:pointer;
+  user-select:none;
+}
+.logo-mini{
+  width:34px;height:34px;border-radius:12px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.12);
+  overflow:hidden;
+}
+.logo-mini img{width:100%;height:100%;object-fit:cover;display:block}
+.brand .name{font-weight:950;letter-spacing:.4px;line-height:1}
+.brand .sub{font-size:12px;color:var(--muted);font-weight:800;margin-top:2px}
+
+.btn{
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.92);
+  font-weight:950;
+  cursor:pointer;
+  transition:transform .14s ease, background .14s ease, border-color .14s ease;
+}
+.btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{
+  background:rgba(255,255,255,.92);
+  color:rgba(18,12,30,.95);
+  border:none;
+}
+.btn.primary span{color:var(--accent)}
+
+.wrap{
+  position:relative;
+  z-index:1;
+  width:min(1100px,94vw);
+  margin:22px auto 80px;
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  gap:18px;
+  align-items:start;
+  flex:1;
+}
+
+.glass{
+  border-radius:var(--radius);
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(12px);
+}
+.card{padding:22px 20px}
+
+.kicker{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.86);font-weight:950}
+.dot{width:10px;height:10px;border-radius:999px;box-shadow:0 0 18px rgba(255,255,255,.18)}
+.d-orange{background:rgba(255,122,61,.95)}
+h1{margin:10px 0 8px;font-size:clamp(30px,3.2vw,44px);letter-spacing:.2px}
+.lead{margin:0;color:rgba(255,255,255,.78);font-weight:850;line-height:1.6}
+
+.kpis{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{padding:12px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
+.kpi b{display:block;font-size:14px;letter-spacing:.2px}
+.kpi span{display:block;font-size:12px;color:rgba(255,255,255,.75);font-weight:800;margin-top:4px}
+
+.tabs{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+.tab{
+  padding:10px 12px;border-radius:999px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  color:rgba(255,255,255,.90);
+  font-weight:950;
+  cursor:pointer;
+  transition:transform .14s ease, background .14s ease, border-color .14s ease;
+  user-select:none;
+}
+.tab:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+.tab.active{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.26)}
+.tab:active{transform:translateY(1px)}
+
+.panel{
+  margin-top:12px;
+  padding:18px;
+  border-radius:18px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  overflow:hidden;
+  transition:opacity .18s ease, transform .18s ease;
+}
+.panel.fade-out{opacity:0;transform:translateY(6px)}
+.panel.fade-in{opacity:1;transform:translateY(0)}
+.p{margin:0;color:rgba(255,255,255,.82);font-weight:800;line-height:1.65}
+.panel ul{margin:12px 0 0;padding-left:18px}
+.panel li{margin:8px 0;color:rgba(255,255,255,.82);font-weight:800;line-height:1.45}
+
+.media{overflow:hidden}
+.media-head{
+  padding:14px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+.media-head b{font-size:14px;letter-spacing:.2px}
+.media-body{padding:14px 14px 18px}
+
+.quiz{
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.14);
+  overflow:hidden;
+  background:rgba(0,0,0,.18);
+}
+.quizTop{
+  padding:12px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+}
+.quizTop b{font-size:13px;letter-spacing:.2px}
+.quizTop span{font-size:12px;color:rgba(255,255,255,.72);font-weight:900}
+.quizBody{padding:14px;display:grid;gap:10px}
+.qCard{
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  padding:14px;
+}
+.qTitle{margin:0 0 10px;color:rgba(255,255,255,.92);font-weight:950}
+.choices{display:grid;gap:10px}
+.choice{
+  padding:12px 12px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.90);
+  font-weight:950;
+  cursor:pointer;
+  transition:transform .14s ease, background .14s ease, border-color .14s ease;
+  text-align:left;
+}
+.choice:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+.choice:active{transform:translateY(1px)}
+.choice.good{background:rgba(124,255,74,.18);border-color:rgba(124,255,74,.35)}
+.choice.bad{background:rgba(255,79,79,.18);border-color:rgba(255,79,79,.35)}
+
+.controls{
+  margin-top:12px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.pill{
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.92);
+  font-weight:950;
+  cursor:pointer;
+  transition:transform .14s ease, background .14s ease, border-color .14s ease;
+  user-select:none;
+}
+.pill:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+.pill:active{transform:translateY(1px)}
+.pill.primary{background:rgba(255,255,255,.92);color:rgba(18,12,30,.95);border:none}
+.pill.primary span{color:var(--accent)}
+
+.gallery{margin-top:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.shot{
+  border-radius:18px;border:1px solid rgba(255,255,255,.14);
+  overflow:hidden;background:rgba(255,255,255,.06);
+  aspect-ratio:16/10;
+  display:grid;place-items:center;
+  font-weight:950;color:rgba(255,255,255,.82);
+}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+
+@media (max-width:980px){
+  .wrap{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr}
+  .gallery{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+<div class="wallpaper"></div>
+
+<div class="page" id="page">
+  <div class="bg-orbs" id="bgOrbs"></div>
+
+  <header class="topbar">
+    <div class="brand" id="backHome" tabindex="0" role="button" aria-label="Volver a NANU">
+      <div class="logo-mini"><img src="assets/nanu-logo.png" alt=""></div>
+      <div>
+        <div class="name">NANU</div>
+        <div class="sub">Volver</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" id="prevBtn">Anterior</button>
+      <button class="btn primary" id="nextBtn"><span>Siguiente</span></button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="glass card">
+      <div class="kicker"><span class="dot d-orange"></span><span>Retos & Lógica</span></div>
+      <h1>Cerebro Lógico</h1>
+      <p class="lead">
+        Juegos cortos de pensamiento lógico y matemático. Diseñado para practicar patrones, secuencias y
+        resolución de problemas con retroalimentación clara y ritmo amigable.
+      </p>
+
+      <div class="kpis">
+        <div class="kpi"><b>Objetivo</b><span>Razonamiento y agilidad mental</span></div>
+        <div class="kpi"><b>Interacción</b><span>Minijuegos + retos breves</span></div>
+        <div class="kpi"><b>Enfoque</b><span>Claridad, progreso y motivación</span></div>
+      </div>
+
+      <div class="tabs" id="tabs">
+        <div class="tab active" data-tab="que">Qué hace</div>
+        <div class="tab" data-tab="como">Cómo se usa</div>
+        <div class="tab" data-tab="beneficios">Beneficios</div>
+        <div class="tab" data-tab="contenido">Contenido</div>
+      </div>
+
+      <div class="panel fade-in" id="panel"></div>
+    </section>
+
+    <aside class="glass media">
+  <div class="media-head">
+    <b>Demo / Video</b>
+    <span style="color:rgba(255,255,255,.70);font-weight:900;font-size:12px">Local</span>
+  </div>
+  <div class="media-body">
+
+  <div style="border-radius:18px;border:1px solid rgba(255,255,255,.14);overflow:hidden">
+    <video autoplay muted loop playsinline style="width:100%;height:330px;object-fit:cover">
+      <source src="assets/preview-logic2.mp4" type="video/mp4">
+    </video>
+  </div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+const page=document.getElementById("page")
+requestAnimationFrame(()=>page.classList.add("ready"))
+function goSmooth(url){
+  page.classList.add("exiting")
+  setTimeout(()=>{location.href=url},220)
+}
+
+function rand(min,max){return Math.random()*(max-min)+min}
+const bgOrbs=document.getElementById("bgOrbs")
+for(let i=0;i<14;i++){
+  const d=document.createElement("div")
+  d.className="orb "+(i%3===0?"c1":i%3===1?"c2":"c3")
+  const size=rand(180,520)
+  d.style.width=size+"px"
+  d.style.height=size+"px"
+  d.style.left=rand(-10,110)+"vw"
+  d.style.top=rand(-10,110)+"vh"
+  d.style.setProperty("--x1",rand(-40,40)+"px")
+  d.style.setProperty("--y1",rand(-40,40)+"px")
+  d.style.setProperty("--x2",rand(-80,80)+"px")
+  d.style.setProperty("--y2",rand(-80,80)+"px")
+  d.style.animationDuration=rand(8,16)+"s"
+  d.style.animationDelay=(-rand(0,12))+"s"
+  bgOrbs.appendChild(d)
+}
+
+const HOME="NANU.html#s2"
+const ROUTES={
+  senales:"senales.html",
+  logica:"logica.html",
+  camin:"camin.html",
+  dali:"dali.html",
+  eco:"eco.html",
+  mundos:"mundos.html"
+}
+const ORDER=["senales","logica","camin","dali","eco","mundos"]
+const CURRENT="logica"
+
+const TABS_DATA={
+  que:{
+    p:"Cerebro Lógico reúne minijuegos de lógica y matemáticas: patrones, secuencias, comparación, conteo y problemas cortos. La meta es practicar pensamiento estructurado sin saturar, con retos rápidos y repetibles.",
+    items:[
+      "Retos de patrones y secuencias.",
+      "Problemas cortos de conteo y comparación.",
+      "Dificultad progresiva y sesiones breves.",
+      "Retroalimentación clara y motivante."
+    ]
+  },
+  como:{
+    p:"El usuario entra, juega un reto, recibe feedback y pasa al siguiente. La interfaz reduce distracciones: una pregunta por pantalla, opciones grandes y botones mínimos.",
+    items:[
+      "Toca “Nuevo reto” para iniciar.",
+      "Elige una respuesta entre 3–4 opciones.",
+      "Mira si fue correcto y aprende la regla.",
+      "Repite para mejorar racha y precisión."
+    ]
+  },
+  beneficios:{
+    p:"Fortalece razonamiento lógico, atención y memoria de trabajo. También mejora tolerancia al error al usar retroalimentación positiva y oportunidades de reintento sin presión.",
+    items:[
+      "Mejora análisis de patrones y reglas.",
+      "Refuerza atención sostenida y memoria.",
+      "Aumenta velocidad de decisión con práctica.",
+      "Promueve confianza con progreso visible."
+    ]
+  },
+  contenido:{
+    p:"El módulo puede crecer por packs de minijuegos (patrones, números, formas, lógica visual). Cada pack conserva el mismo flujo para mantener claridad.",
+    items:[
+      "Packs por tema: números, formas, secuencias.",
+      "Niveles: básico, medio, reto.",
+      "Modo práctica (sin tiempo) y modo reto (con tiempo).",
+      "Estadísticas: aciertos, rachas, tiempo promedio."
+    ]
+  }
+}
+
+const tabs=document.getElementById("tabs")
+const panel=document.getElementById("panel")
+
+function setActiveTab(key){
+  tabs.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===key))
+}
+function panelHTML(key){
+  const c=TABS_DATA[key] || TABS_DATA.que
+  const items=(c.items||[]).map(x=>`<li>${x}</li>`).join("")
+  return `<p class="p">${c.p||""}</p><ul>${items}</ul>`
+}
+function swapPanel(key){
+  setActiveTab(key)
+  panel.classList.remove("fade-in")
+  panel.classList.add("fade-out")
+  const html=panelHTML(key)
+  setTimeout(()=>{
+    panel.innerHTML=html
+    panel.classList.remove("fade-out")
+    panel.classList.add("fade-in")
+  },160)
+}
+panel.innerHTML=panelHTML("que")
+
+tabs.addEventListener("click",(e)=>{
+  const t=e.target.closest(".tab")
+  if(!t)return
+  swapPanel(t.dataset.tab)
+})
+
+function nav(delta){
+  const idx=ORDER.indexOf(CURRENT)
+  const next=ORDER[(idx+delta+ORDER.length)%ORDER.length]
+  goSmooth(ROUTES[next] || HOME)
+}
+document.getElementById("prevBtn").addEventListener("click",()=>nav(-1))
+document.getElementById("nextBtn").addEventListener("click",()=>nav(1))
+
+const backHome=document.getElementById("backHome")
+backHome.addEventListener("click",()=>goSmooth(HOME))
+backHome.addEventListener("keydown",(e)=>{
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();goSmooth(HOME)}
+})
+
+const quizBody=document.getElementById("quizBody")
+const quizTitle=document.getElementById("quizTitle")
+const quizMeta=document.getElementById("quizMeta")
+const scoreEl=document.getElementById("score")
+
+let total=0
+let ok=0
+let level=1
+let locked=false
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1))
+    ;[a[i],a[j]]=[a[j],a[i]]
+  }
+  return a
+}
+
+function buildQuestion(){
+  locked=false
+  const type=Math.floor(Math.random()*3)
+  if(type===0){
+    const start=Math.floor(Math.random()*6)+1
+    const step=Math.floor(Math.random()*4)+1
+    const seq=[start,start+step,start+2*step,start+3*step]
+    const answer=seq[3]
+    const question=`Completa la secuencia: ${seq[0]}, ${seq[1]}, ${seq[2]}, ?`
+    const opts=new Set([answer])
+    while(opts.size<4){
+      opts.add(answer + (Math.floor(Math.random()*9)-4))
+    }
+    return {q:question,a:answer,opts:shuffle([...opts])}
+  }
+  if(type===1){
+    const a=Math.floor(Math.random()*9)+1
+    const b=Math.floor(Math.random()*9)+1
+    const answer=a+b
+    const question=`¿Cuánto es ${a} + ${b}?`
+    const opts=new Set([answer])
+    while(opts.size<4){
+      opts.add(answer + (Math.floor(Math.random()*9)-4))
+    }
+    return {q:question,a:answer,opts:shuffle([...opts])}
+  }
+  const left=Math.floor(Math.random()*9)+1
+  const right=Math.floor(Math.random()*9)+1
+  const answer=left>right?">":left<right?"<":"="
+  const question=`Compara: ${left} ? ${right}`
+  const opts=shuffle([">","<","="])
+  return {q:question,a:answer,opts}
+}
+
+let current=buildQuestion()
+
+function renderQuiz(){
+  quizTitle.textContent="Reto"
+  quizMeta.textContent="Nivel "+level
+  scoreEl.textContent=ok+"/"+total
+  quizBody.innerHTML=`
+    <div class="qCard">
+      <p class="qTitle">${current.q}</p>
+      <div class="choices" id="choices"></div>
+    </div>
+  `
+  const choices=document.getElementById("choices")
+  current.opts.forEach(v=>{
+    const b=document.createElement("button")
+    b.className="choice"
+    b.textContent=v
+    b.addEventListener("click",()=>pick(v,b))
+    choices.appendChild(b)
+  })
+}
+
+function pick(v,btn){
+  if(locked)return
+  locked=true
+  total++
+  const choices=[...document.querySelectorAll(".choice")]
+  choices.forEach(c=>{
+    if(c.textContent==String(current.a)) c.classList.add("good")
+  })
+  if(String(v)===String(current.a)){
+    ok++
+    btn.classList.add("good")
+    if(ok%3===0) level++
+  }else{
+    btn.classList.add("bad")
+  }
+  scoreEl.textContent=ok+"/"+total
+}
+
+document.getElementById("newQ").addEventListener("click",()=>{
+  current=buildQuestion()
+  renderQuiz()
+})
+document.getElementById("reset").addEventListener("click",()=>{
+  total=0
+  ok=0
+  level=1
+  current=buildQuestion()
+  renderQuiz()
+})
+document.getElementById("openApp").addEventListener("click",()=>{
+  location.href="nanu://logica"
+})
+
+renderQuiz()
+</script>
+</body>
+</html>

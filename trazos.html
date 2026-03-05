@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NANU — Trazos Magicos</title>
+
+<style>
+:root{
+  --bg1:#0b4aa8;
+  --bg2:#2a0b6b;
+  --text:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.72);
+  --accent:#7cff4a;
+  --radius:22px;
+  --shadow:0 20px 60px rgba(0,0,0,.22);
+  --glass:rgba(255,255,255,.10);
+  --stroke:rgba(255,255,255,.16);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:ui-rounded,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+
+body{
+  color:var(--text);
+  overflow-x:hidden;
+  background:#2a0b6b;
+}
+
+.wallpaper{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  background:
+    radial-gradient(1000px 700px at 20% 10%,rgba(255,255,255,.10),transparent 55%),
+    radial-gradient(900px 700px at 85% 20%,rgba(255,255,255,.08),transparent 60%),
+    linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 60%, var(--bg2) 100%);
+  background-attachment:fixed;
+}
+.wallpaper::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.14) 100%);
+  pointer-events:none;
+}
+
+.page{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity .28s ease, transform .28s ease;
+}
+.page.ready{opacity:1;transform:translateY(0)}
+.page.exiting{opacity:0;transform:translateY(10px)}
+
+.bg-orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.orb{
+  position:absolute;border-radius:999px;opacity:.14;mix-blend-mode:screen;will-change:transform;
+  background:
+    radial-gradient(circle at 30% 30%,rgba(255,255,255,.65),rgba(255,255,255,0) 60%),
+    radial-gradient(circle at 70% 70%,rgba(255,255,255,.35),rgba(255,255,255,0) 55%);
+  box-shadow:0 0 60px rgba(255,255,255,.08);
+  animation:float 10s ease-in-out infinite;
+}
+.orb.c1{background:radial-gradient(circle at 30% 30%,rgba(124,255,74,.70),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+.orb.c2{background:radial-gradient(circle at 30% 30%,rgba(64,214,255,.75),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+.orb.c3{background:radial-gradient(circle at 30% 30%,rgba(255,79,216,.72),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+@keyframes float{
+  0%,100%{transform:translate3d(var(--x1),var(--y1),0) scale(1)}
+  50%{transform:translate3d(var(--x2),var(--y2),0) scale(1.06)}
+}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:6;
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  backdrop-filter:blur(14px);
+  background:linear-gradient(180deg,rgba(10,18,60,.55),rgba(10,18,60,.18));
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  cursor:pointer;
+  user-select:none;
+}
+.logo-mini{
+  width:34px;height:34px;border-radius:12px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.12);
+  overflow:hidden;
+}
+.logo-mini img{width:100%;height:100%;object-fit:cover;display:block}
+.brand .name{font-weight:950;letter-spacing:.4px;line-height:1}
+.brand .sub{font-size:12px;color:var(--muted);font-weight:800;margin-top:2px}
+
+.btn{
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.92);
+  font-weight:950;
+  cursor:pointer;
+  transition:transform .14s ease, background .14s ease, border-color .14s ease;
+}
+.btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{
+  background:rgba(255,255,255,.92);
+  color:rgba(10,18,60,.95);
+  border:none;
+}
+.btn.primary span{color:var(--accent)}
+
+.wrap{
+  position:relative;
+  z-index:1;
+  width:min(1100px,94vw);
+  margin:22px auto 80px;
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  gap:18px;
+  align-items:start;
+  flex:1;
+}
+
+.glass{
+  border-radius:var(--radius);
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(12px);
+}
+.card{padding:22px 20px}
+
+.kicker{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.86);font-weight:950}
+.dot{width:10px;height:10px;border-radius:999px;box-shadow:0 0 18px rgba(255,255,255,.18)}
+.d-green{background:rgba(124,255,74,.95)}
+h1{margin:10px 0 8px;font-size:clamp(30px,3.2vw,44px);letter-spacing:.2px}
+.lead{margin:0;color:rgba(255,255,255,.78);font-weight:850;line-height:1.6}
+
+.kpis{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{padding:12px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
+.kpi b{display:block;font-size:14px;letter-spacing:.2px}
+.kpi span{display:block;font-size:12px;color:rgba(255,255,255,.75);font-weight:800;margin-top:4px}
+
+.tabs{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+.tab{
+  padding:10px 12px;border-radius:999px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  color:rgba(255,255,255,.90);
+  font-weight:950;
+  cursor:pointer;
+  transition:transform .14s ease, background .14s ease, border-color .14s ease;
+  user-select:none;
+}
+.tab:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+.tab.active{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.26)}
+.tab:active{transform:translateY(1px)}
+
+.panel{
+  margin-top:12px;
+  padding:18px;
+  border-radius:18px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  overflow:hidden;
+  transition:opacity .18s ease, transform .18s ease;
+}
+.panel.fade-out{opacity:0;transform:translateY(6px)}
+.panel.fade-in{opacity:1;transform:translateY(0)}
+.p{margin:0;color:rgba(255,255,255,.82);font-weight:800;line-height:1.65}
+.panel ul{margin:12px 0 0;padding-left:18px}
+.panel li{margin:8px 0;color:rgba(255,255,255,.82);font-weight:800;line-height:1.45}
+
+.media{overflow:hidden}
+.media-head{
+  padding:14px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+.media-head b{font-size:14px;letter-spacing:.2px}
+.media-body{padding:14px 14px 18px}
+
+.reader{
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.14);
+  overflow:hidden;
+  background:rgba(0,0,0,.18);
+}
+.readerTop{
+  padding:12px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+}
+.readerTop b{font-size:13px;letter-spacing:.2px}
+.readerTop span{font-size:12px;color:rgba(255,255,255,.72);font-weight:900}
+.readerBody{
+  padding:14px;
+  min-height:220px;
+  display:grid;
+  gap:10px;
+}
+.pageCard{
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  padding:14px;
+}
+.pageTitle{font-weight:950;color:rgba(255,255,255,.92);margin:0 0 6px}
+.pageText{margin:0;color:rgba(255,255,255,.82);font-weight:850;line-height:1.55}
+.readerControls{
+  margin-top:12px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.pill{
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.92);
+  font-weight:950;
+  cursor:pointer;
+  transition:transform .14s ease, background .14s ease, border-color .14s ease;
+  user-select:none;
+}
+.pill:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+.pill:active{transform:translateY(1px)}
+.pill.primary{background:rgba(255,255,255,.92);color:rgba(10,18,60,.95);border:none}
+.pill.primary span{color:var(--accent)}
+
+.gallery{margin-top:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.shot{
+  border-radius:18px;border:1px solid rgba(255,255,255,.14);
+  overflow:hidden;background:rgba(255,255,255,.06);
+  aspect-ratio:16/10;
+  display:grid;place-items:center;
+  font-weight:950;color:rgba(255,255,255,.82);
+}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+
+@media (max-width:980px){
+  .wrap{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr}
+  .gallery{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+  <div class="wallpaper"></div>
+
+  <div class="page" id="page">
+    <div class="bg-orbs" id="bgOrbs"></div>
+
+    <header class="topbar">
+      <div class="brand" id="backHome" tabindex="0" role="button" aria-label="Volver a NANU">
+        <div class="logo-mini"><img src="assets/nanu-logo.png" alt=""></div>
+        <div>
+          <div class="name">NANU</div>
+          <div class="sub">Volver</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="prevBtn">Anterior</button>
+        <button class="btn primary" id="nextBtn"><span>Siguiente</span></button>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="glass card">
+        <div class="kicker"><span class="dot d-green"></span><span>Trazado de números</span></div>
+        <h1>Trazos Magicos</h1>
+        <p class="lead">
+            Practica los números trazándolos con el dedo o el mouse. Sigue la guía punteada para aprender su forma y mejorar coordinación y memoria visual.
+        </p>
+
+        <div class="kpis">
+          <div class="kpi"><b>Objetivo</b><span>Reconocer números</span></div>
+          <div class="kpi"><b>Interacción</b><span>Trazar con dedo o mouse</span></div>
+          <div class="kpi"><b>Enfoque</b><span>Coordinación y memoria</span></div>
+        </div>
+
+        <div class="tabs" id="tabs">
+          <div class="tab active" data-tab="que">Qué hace</div>
+          <div class="tab" data-tab="como">Cómo se usa</div>
+          <div class="tab" data-tab="beneficios">Beneficios</div>
+          <div class="tab" data-tab="contenido">Contenido</div>
+        </div>
+
+        <div class="panel fade-in" id="panel"></div>
+
+      </section>
+
+      <aside class="glass media">
+        <div class="media-head">
+          <b>Vista previa</b>
+          <span style="color:rgba(255,255,255,.70);font-weight:900;font-size:12px" id="modeLabel">Lector</span>
+        </div>
+        <div class="media-body">
+          <div class="reader">
+            <div class="readerTop">
+            <b>Número a trazar</b>
+                <span id="numLabel">1 / 5</span>
+          </div>
+
+<div class="readerBody" style="display:flex;justify-content:center;align-items:center">
+
+<canvas id="traceCanvas" width="360" height="360" style="
+background:transparent;
+border-radius:16px;
+touch-action:none;
+"></canvas>
+
+</div>
+</div>
+
+          <div class="readerControls">
+            <button class="pill" id="prevNum">← Número</button>
+            <button class="pill primary" id="clearCanvas"><span>Borrar</span></button>
+            <button class="pill" id="nextNum">Número →</button>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+<script>
+const page=document.getElementById("page")
+requestAnimationFrame(()=>page.classList.add("ready"))
+function goSmooth(url){
+  page.classList.add("exiting")
+  setTimeout(()=>{location.href=url},220)
+}
+
+function rand(min,max){return Math.random()*(max-min)+min}
+const bgOrbs=document.getElementById("bgOrbs")
+for(let i=0;i<14;i++){
+  const d=document.createElement("div")
+  d.className="orb "+(i%3===0?"c1":i%3===1?"c2":"c3")
+  const size=rand(180,520)
+  d.style.width=size+"px"
+  d.style.height=size+"px"
+  d.style.left=rand(-10,110)+"vw"
+  d.style.top=rand(-10,110)+"vh"
+  d.style.setProperty("--x1",rand(-40,40)+"px")
+  d.style.setProperty("--y1",rand(-40,40)+"px")
+  d.style.setProperty("--x2",rand(-80,80)+"px")
+  d.style.setProperty("--y2",rand(-80,80)+"px")
+  d.style.animationDuration=rand(8,16)+"s"
+  d.style.animationDelay=(-rand(0,12))+"s"
+  bgOrbs.appendChild(d)
+}
+
+const HOME="NANU.html#s2"
+const ROUTES={
+  senales:"senales.html",
+  logica:"logica.html",
+  camin:"camin.html",
+  dali:"dali.html",
+  eco:"eco.html",
+  trazos:"trazos.html"
+}
+const ORDER=["senales","logica","camin","dali","eco","trazos"]
+const CURRENT="trazos"
+
+const TABS_DATA={
+  que:{
+    p:"Trazos Mágicos permite aprender números dibujándolos directamente en la pantalla. El usuario sigue una guía punteada y practica su forma mediante interacción táctil o con mouse.",
+    items:[
+      "Guía visual para aprender cada número.",
+      "Interacción directa con dedo o mouse.",
+      "Práctica repetible para mejorar memoria.",
+      "Progreso automático entre números."
+    ]
+  },
+  como:{
+    p:"El usuario sigue la forma del número usando el dedo o el mouse. Al completar suficientes trazos, el sistema avanza automáticamente al siguiente número.",
+    items:[
+      "Observa el número guía.",
+      "Traza siguiendo la forma.",
+      "Borra si necesitas repetir.",
+      "Avanza al siguiente número."
+    ]
+  },
+  beneficios:{
+    p:"El trazado ayuda a desarrollar coordinación motriz fina, memoria visual y reconocimiento temprano de números.",
+    items:[
+      "Mejora coordinación mano-ojo.",
+      "Refuerza reconocimiento numérico.",
+      "Aprendizaje activo y visual.",
+      "Permite repetir hasta dominar."
+    ]
+  },
+  contenido:{
+    p:"El módulo puede expandirse con más números, letras o formas para continuar el aprendizaje progresivo.",
+    items:[
+      "Números del 1 al 5.",
+      "Práctica libre con borrado.",
+      "Progreso automático.",
+      "Base para futuras actividades."
+    ]
+  }
+}
+const tabs=document.getElementById("tabs")
+const panel=document.getElementById("panel")
+function setActiveTab(key){
+  tabs.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===key))
+}
+function panelHTML(key){
+  const c=TABS_DATA[key] || TABS_DATA.que
+  const items=(c.items||[]).map(x=>`<li>${x}</li>`).join("")
+  return `<p class="p">${c.p||""}</p><ul>${items}</ul>`
+}
+function swapPanel(key){
+  setActiveTab(key)
+  panel.classList.remove("fade-in")
+  panel.classList.add("fade-out")
+  const html=panelHTML(key)
+  setTimeout(()=>{
+    panel.innerHTML=html
+    panel.classList.remove("fade-out")
+    panel.classList.add("fade-in")
+  },160)
+}
+panel.innerHTML=panelHTML("que")
+tabs.addEventListener("click",(e)=>{
+  const t=e.target.closest(".tab")
+  if(!t)return
+  swapPanel(t.dataset.tab)
+})
+
+function nav(delta){
+  const idx=ORDER.indexOf(CURRENT)
+  const next=ORDER[(idx+delta+ORDER.length)%ORDER.length]
+  goSmooth(ROUTES[next] || HOME)
+}
+document.getElementById("prevBtn").addEventListener("click",()=>nav(-1))
+document.getElementById("nextBtn").addEventListener("click",()=>nav(1))
+
+const backHome=document.getElementById("backHome")
+backHome.addEventListener("click",()=>goSmooth(HOME))
+backHome.addEventListener("keydown",(e)=>{
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();goSmooth(HOME)}
+})
+
+const canvas = document.getElementById("traceCanvas")
+const ctx = canvas.getContext("2d")
+
+const numbers=["1","2","3","4","5"]
+
+let numberIndex=0
+let drawing=false
+let points=[]
+
+const maskCanvas=document.createElement("canvas")
+maskCanvas.width=canvas.width
+maskCanvas.height=canvas.height
+const maskCtx=maskCanvas.getContext("2d")
+
+function drawGuide(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+maskCtx.clearRect(0,0,canvas.width,canvas.height)
+
+ctx.font="260px 'Arial Rounded MT Bold', Arial"
+ctx.textAlign="center"
+ctx.textBaseline="middle"
+
+ctx.strokeStyle="rgba(255,255,255,0.35)"
+ctx.lineWidth=4
+ctx.setLineDash([12,10])
+
+ctx.strokeText(numbers[numberIndex],canvas.width/2,canvas.height/2)
+
+ctx.setLineDash([])
+
+maskCtx.font="260px Arial"
+maskCtx.textAlign="center"
+maskCtx.textBaseline="middle"
+maskCtx.fillStyle="white"
+
+maskCtx.fillText(numbers[numberIndex],canvas.width/2,canvas.height/2)
+
+document.getElementById("numLabel").textContent=(numberIndex+1)+" / "+numbers.length
+
+points=[]
+
+}
+
+function start(e){
+drawing=true
+draw(e)
+}
+
+function end(){
+drawing=false
+
+if(points.length>150){
+success()
+}
+
+ctx.beginPath()
+}
+
+function draw(e){
+
+if(!drawing)return
+
+const rect=canvas.getBoundingClientRect()
+
+const x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left
+const y=(e.touches?e.touches[0].clientY:e.clientY)-rect.top
+
+const pixel=maskCtx.getImageData(x,y,1,1).data
+
+if(pixel[3]===0)return
+
+points.push({x,y})
+
+ctx.lineWidth=24
+ctx.lineCap="round"
+ctx.strokeStyle="#7cff4a"
+
+ctx.lineTo(x,y)
+ctx.stroke()
+
+ctx.beginPath()
+ctx.moveTo(x,y)
+
+}
+
+function success(){
+
+ctx.fillStyle="rgba(124,255,74,0.2)"
+ctx.fillRect(0,0,canvas.width,canvas.height)
+
+setTimeout(()=>{
+
+numberIndex++
+
+if(numberIndex>=numbers.length){
+numberIndex=0
+}
+
+drawGuide()
+
+},700)
+
+}
+
+canvas.addEventListener("mousedown",start)
+canvas.addEventListener("mouseup",end)
+canvas.addEventListener("mousemove",draw)
+
+canvas.addEventListener("touchstart",start)
+canvas.addEventListener("touchend",end)
+canvas.addEventListener("touchmove",draw)
+
+document.getElementById("clearCanvas").onclick=drawGuide
+
+document.getElementById("nextNum").onclick=()=>{
+numberIndex++
+if(numberIndex>=numbers.length)numberIndex=0
+drawGuide()
+}
+
+document.getElementById("prevNum").onclick=()=>{
+numberIndex--
+if(numberIndex<0)numberIndex=numbers.length-1
+drawGuide()
+}
+
+drawGuide()
+
+canvas.addEventListener("mousedown",start)
+canvas.addEventListener("mouseup",end)
+canvas.addEventListener("mousemove",draw)
+
+canvas.addEventListener("touchstart",start)
+canvas.addEventListener("touchend",end)
+canvas.addEventListener("touchmove",draw)
+
+document.getElementById("clearCanvas").onclick=drawGuide
+
+document.getElementById("nextNum").onclick=()=>{
+numberIndex++
+if(numberIndex>=numbers.length)numberIndex=0
+drawGuide()
+}
+
+document.getElementById("prevNum").onclick=()=>{
+numberIndex--
+if(numberIndex<0)numberIndex=numbers.length-1
+drawGuide()
+}
+
+let storyIndex=0
+let pageIndex=0
+
+const readerBody=document.getElementById("readerBody")
+const storyTitle=document.getElementById("storyTitle")
+const pageCount=document.getElementById("pageCount")
+
+function render(){
+  const s=STORIES[storyIndex]
+  const pg=s.pages[pageIndex]
+  storyTitle.textContent=s.title
+  pageCount.textContent=`Página ${pageIndex+1}/${s.pages.length}`
+  readerBody.innerHTML=`<div class="pageCard"><p class="pageTitle">${pg.t}</p><p class="pageText">${pg.p}</p></div>`
+}
+
+function clampPage(){
+  const max=STORIES[storyIndex].pages.length-1
+  if(pageIndex<0)pageIndex=0
+  if(pageIndex>max)pageIndex=max
+}
+
+document.getElementById("pagePrev").addEventListener("click",()=>{
+  pageIndex--
+  clampPage()
+  render()
+})
+document.getElementById("pageNext").addEventListener("click",()=>{
+  pageIndex++
+  clampPage()
+  render()
+})
+document.getElementById("randomStory").addEventListener("click",()=>{
+  storyIndex=(storyIndex+1)%STORIES.length
+  pageIndex=0
+  render()
+})
+document.getElementById("playAudio").addEventListener("click",()=>{
+  location.href="nanu://trazos?story="+encodeURIComponent(STORIES[storyIndex].title)+"&page="+(pageIndex+1)
+})
+
+render()
+</script>
+</body>
+</html>

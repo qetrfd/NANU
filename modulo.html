@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>NANU — Módulo</title>
+<style>
+:root{
+  --bg1:#5a2aa8;
+  --bg2:#3b2db2;
+  --text:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.72);
+  --accent:#ff4fd8;
+  --radius:22px;
+  --shadow:0 20px 60px rgba(0,0,0,.22);
+  --glass:rgba(255,255,255,.10);
+  --stroke:rgba(255,255,255,.16);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:ui-rounded,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+body{
+  color:var(--text);
+  background:
+    radial-gradient(1000px 700px at 20% 10%,rgba(255,255,255,.10),transparent 55%),
+    radial-gradient(900px 700px at 85% 20%,rgba(255,255,255,.08),transparent 60%),
+    linear-gradient(180deg,var(--bg1),var(--bg2));
+  overflow-x:hidden;
+}
+
+.bg-orbs{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  overflow:hidden;
+}
+.orb{
+  position:absolute;
+  border-radius:999px;
+  opacity:.14;
+  mix-blend-mode:screen;
+  will-change:transform;
+  background:
+    radial-gradient(circle at 30% 30%,rgba(255,255,255,.65),rgba(255,255,255,0) 60%),
+    radial-gradient(circle at 70% 70%,rgba(255,255,255,.35),rgba(255,255,255,0) 55%);
+  box-shadow:0 0 60px rgba(255,255,255,.08);
+  animation:float 10s ease-in-out infinite;
+}
+.orb.c1{background:radial-gradient(circle at 30% 30%,rgba(255,82,182,.70),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+.orb.c2{background:radial-gradient(circle at 30% 30%,rgba(64,214,255,.75),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+.orb.c3{background:radial-gradient(circle at 30% 30%,rgba(142,255,98,.70),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+@keyframes float{
+  0%,100%{transform:translate3d(var(--x1),var(--y1),0) scale(1)}
+  50%{transform:translate3d(var(--x2),var(--y2),0) scale(1.06)}
+}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:5;
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  backdrop-filter:blur(14px);
+  background:linear-gradient(180deg,rgba(20,8,60,.50),rgba(20,8,60,.16));
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.brand-mini{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  cursor:pointer;
+  user-select:none;
+}
+.logo-mini{
+  width:34px;height:34px;border-radius:12px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.12);
+  overflow:hidden;
+}
+.logo-mini img{width:100%;height:100%;object-fit:cover;display:block}
+.brand-mini .name{font-weight:950;letter-spacing:.4px;line-height:1}
+.brand-mini .sub{font-size:12px;color:var(--muted);font-weight:800;margin-top:2px}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.92);
+  font-weight:950;
+  cursor:pointer;
+  transition:transform .14s ease, background .14s ease, border-color .14s ease;
+}
+.btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{
+  background:rgba(255,255,255,.92);
+  color:rgba(40,10,90,.95);
+  border:none;
+}
+.btn.primary span{color:var(--accent)}
+
+.wrap{
+  position:relative;
+  z-index:1;
+  width:min(1100px,94vw);
+  margin:22px auto 80px;
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  gap:18px;
+  align-items:start;
+}
+.glass{
+  border-radius:var(--radius);
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(12px);
+}
+.hero{
+  padding:22px 20px;
+}
+.kicker{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:rgba(255,255,255,.86);
+  font-weight:950;
+}
+.dot{width:10px;height:10px;border-radius:999px;box-shadow:0 0 18px rgba(255,255,255,.18)}
+.d-pink{background:rgba(255,82,182,.95)}
+.d-cyan{background:rgba(64,214,255,.95)}
+.d-green{background:rgba(142,255,98,.95)}
+.d-yellow{background:rgba(255,222,89,.95)}
+.d-purple{background:rgba(190,120,255,.95)}
+.d-teal{background:rgba(90,255,220,.95)}
+
+h1{margin:10px 0 8px;font-size:clamp(30px,3.2vw,44px);letter-spacing:.2px}
+.subline{margin:0;color:rgba(255,255,255,.78);font-weight:850;line-height:1.55}
+
+.kpis{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{padding:12px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
+.kpi b{display:block;font-size:14px;letter-spacing:.2px}
+.kpi span{display:block;font-size:12px;color:rgba(255,255,255,.75);font-weight:800;margin-top:4px}
+
+.tabs{
+  margin-top:16px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.tab{
+  padding:10px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  color:rgba(255,255,255,.90);
+  font-weight:950;
+  cursor:pointer;
+  transition:transform .14s ease, background .14s ease, border-color .14s ease;
+  user-select:none;
+}
+.tab:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+.tab.active{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.26)}
+.tab:active{transform:translateY(1px)}
+
+.panel{
+  margin-top:12px;
+  padding:18px;
+  border-radius:18px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+}
+.p{margin:0;color:rgba(255,255,255,.82);font-weight:800;line-height:1.65}
+.panel ul{margin:12px 0 0;padding-left:18px}
+.panel li{margin:8px 0;color:rgba(255,255,255,.82);font-weight:800;line-height:1.45}
+
+.media{
+  overflow:hidden;
+}
+.media-head{
+  padding:14px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+.media-head b{font-size:14px;letter-spacing:.2px}
+.media-body{padding:14px 14px 18px}
+.video{
+  width:100%;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.14);
+  overflow:hidden;
+  background:rgba(0,0,0,.18);
+}
+.video iframe{width:100%;height:330px;border:0;display:block}
+.video video{width:100%;height:auto;display:block}
+
+.gallery{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+.shot{
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.14);
+  overflow:hidden;
+  background:rgba(255,255,255,.06);
+  aspect-ratio:16/10;
+  display:grid;
+  place-items:center;
+  font-weight:950;
+  color:rgba(255,255,255,.82);
+}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+
+@media (max-width:980px){
+  .wrap{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr}
+  .video iframe{height:220px}
+  .gallery{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+<div class="bg-orbs" id="bgOrbs"></div>
+
+<header class="topbar">
+  <div class="brand-mini" id="backHome" tabindex="0" role="button" aria-label="Volver a NANU">
+    <div class="logo-mini"><img src="assets/nanu-logo.png" alt=""></div>
+    <div>
+      <div class="name">NANU</div>
+      <div class="sub">Volver</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" id="prevBtn">Anterior</button>
+    <button class="btn primary" id="nextBtn"><span>Siguiente</span></button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="glass hero">
+    <div class="kicker"><span class="dot d-cyan" id="dot"></span><span id="kickerText">Módulo</span></div>
+    <h1 id="title">Cargando…</h1>
+    <p class="subline" id="subtitle"></p>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-tab="que">Qué hace</div>
+      <div class="tab" data-tab="como">Cómo se usa</div>
+      <div class="tab" data-tab="beneficios">Beneficios</div>
+      <div class="tab" data-tab="contenido">Contenido</div>
+    </div>
+
+    <div class="panel" id="panel"></div>
+
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <aside class="glass media">
+    <div class="media-head">
+      <b>Video / Demo</b>
+      <span style="color:rgba(255,255,255,.70);font-weight:900;font-size:12px" id="videoLabel">Opcional</span>
+    </div>
+    <div class="media-body">
+      <div class="video" id="videoWrap"></div>
+      <div style="margin-top:10px;color:rgba(255,255,255,.76);font-weight:800;line-height:1.5" id="videoHint">
+        Puedes usar video local (.mp4) en assets o un embed de YouTube/Vimeo.
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+function rand(min,max){return Math.random()*(max-min)+min}
+const bgOrbs=document.getElementById("bgOrbs")
+for(let i=0;i<14;i++){
+  const d=document.createElement("div")
+  d.className="orb "+(i%3===0?"c1":i%3===1?"c2":"c3")
+  const size=rand(180,520)
+  d.style.width=size+"px"
+  d.style.height=size+"px"
+  d.style.left=rand(-10,110)+"vw"
+  d.style.top=rand(-10,110)+"vh"
+  d.style.setProperty("--x1",rand(-40,40)+"px")
+  d.style.setProperty("--y1",rand(-40,40)+"px")
+  d.style.setProperty("--x2",rand(-80,80)+"px")
+  d.style.setProperty("--y2",rand(-80,80)+"px")
+  d.style.animationDuration=rand(8,16)+"s"
+  d.style.animationDelay=(-rand(0,12))+"s"
+  bgOrbs.appendChild(d)
+}
+const HOME="NANU.html#s2"
+const ROUTES={
+  senales:"senales.html",
+  logica:"logica.html",
+  camin:"camin.html",
+  dali:"dali.html",
+  eco:"eco.html",
+  trazos:"trazos.html"
+}
+
+const DATA=[
+  {
+    id:"senales",
+    name:"Señales que hablan",
+    dot:"d-cyan",
+    kicker:"Comunicación",
+    subtitle:"Práctica guiada de señas con retroalimentación clara, objetivos cortos y progreso visible.",
+    kpis:[
+      {b:"Objetivo",s:"Comunicación y práctica constante"},
+      {b:"Interacción",s:"Cámara + ejercicios guiados"},
+      {b:"Enfoque",s:"Claridad, accesibilidad y motivación"}
+    ],
+    video:{type:"local",src:"assets/video-senales.mp4"},
+    gallery:["assets/preview-signs.jpg","assets/preview-signs-2.jpg"],
+    tabs:{
+      que:{
+        p:"Este módulo está diseñado para apoyar el aprendizaje de comunicación mediante señas a través de práctica estructurada. La experiencia se centra en ejercicios breves que refuerzan precisión, consistencia y confianza, con una interfaz limpia que reduce distracciones.",
+        items:[
+          "Práctica de señas por objetivo (letra, palabra o secuencia).",
+          "Retroalimentación inmediata con enfoque educativo.",
+          "Sesiones cortas para evitar fatiga y mejorar constancia.",
+          "Progreso simple para mantener motivación."
+        ]
+      },
+      como:{
+        p:"El flujo es directo: eliges un objetivo, observas la guía y practicas. Se prioriza que el usuario entienda qué hacer en cada paso y reciba una respuesta clara sobre su intento.",
+        items:[
+          "Selecciona nivel o reto (letra, palabra, secuencia).",
+          "Revisa la guía visual del gesto.",
+          "Practica frente a cámara siguiendo el ritmo sugerido.",
+          "Recibe confirmación o ajuste recomendado y avanza."
+        ]
+      },
+      beneficios:{
+        p:"Aporta práctica continua en un formato accesible, reforzando atención al detalle y coordinación. La experiencia está pensada para ser útil tanto en práctica individual como acompañada.",
+        items:[
+          "Refuerza coordinación y control motriz fino.",
+          "Mejora atención y seguimiento de instrucciones.",
+          "Promueve inclusión y comunicación alternativa.",
+          "Incrementa confianza con metas pequeñas."
+        ]
+      },
+      contenido:{
+        p:"El contenido puede crecer con el usuario. El módulo está preparado para ampliar bancos de ejercicios y paquetes de aprendizaje por temas.",
+        items:[
+          "Ejercicios por letra, palabra y combinaciones.",
+          "Retos opcionales con tiempo para dinamismo.",
+          "Indicadores de avance por sesión o por tema.",
+          "Biblioteca ampliable de ejemplos y guías."
+        ]
+      }
+    }
+  },
+  {
+    id:"logica",
+    name:"Cerebro Lógico",
+    dot:"d-green",
+    kicker:"Cognición",
+    subtitle:"Retos visuales para fortalecer lógica, patrones y memoria con dificultad progresiva y feedback inmediato.",
+    kpis:[
+      {b:"Objetivo",s:"Lógica, patrones, memoria y decisión"},
+      {b:"Interacción",s:"Micro-retos visuales"},
+      {b:"Enfoque",s:"Progreso medible y sesiones cortas"}
+    ],
+    video:{type:"none"},
+    gallery:["assets/preview-logic.jpg"],
+    tabs:{
+      que:{
+        p:"Reúne retos cortos y visuales enfocados en habilidades cognitivas clave. Cada ejercicio tiene reglas simples y un objetivo claro, buscando estimular pensamiento lógico sin saturar.",
+        items:[
+          "Patrones y secuencias con incrementos graduales.",
+          "Memoria de trabajo con rondas rápidas.",
+          "Clasificación, lógica básica y toma de decisiones.",
+          "Feedback inmediato para aprender del error."
+        ]
+      },
+      como:{
+        p:"El usuario entra, elige una categoría y juega. El sistema registra resultados para que el avance sea visible sin complicar la experiencia.",
+        items:[
+          "Elige categoría (patrones, memoria, lógica).",
+          "Resuelve con interacción simple (taps/arrastrar).",
+          "Recibe explicación breve del resultado.",
+          "Sube dificultad conforme mantienes consistencia."
+        ]
+      },
+      beneficios:{
+        p:"Favorece constancia mediante ejercicios breves. Es útil para entrenar atención y análisis de forma amigable, con progreso claro.",
+        items:[
+          "Mejora enfoque y reconocimiento de patrones.",
+          "Entrena memoria de trabajo sin presión.",
+          "Aumenta confianza al resolver problemas.",
+          "Reduce frustración con feedback claro."
+        ]
+      },
+      contenido:{
+        p:"Los retos se organizan por habilidad y se pueden ampliar con nuevos bancos para mantener variedad.",
+        items:[
+          "Bancos por categoría con variantes.",
+          "Modo práctica y modo reto opcional.",
+          "Estadísticas simples: precisión, rachas, tiempo.",
+          "Paquetes nuevos de niveles."
+        ]
+      }
+    }
+  },
+  {
+    id:"camin",
+    name:"CaminArte",
+    dot:"d-yellow",
+    kicker:"Cultura + AR",
+    subtitle:"Experiencias AR cortas para explorar objetos 3D y aprender cultura mediante descubrimiento guiado.",
+    kpis:[
+      {b:"Objetivo",s:"Aprendizaje inmersivo y cultural"},
+      {b:"Interacción",s:"AR + hotspots informativos"},
+      {b:"Enfoque",s:"Exploración guiada y clara"}
+    ],
+    video:{type:"none"},
+    gallery:["assets/preview-ar.jpg"],
+    tabs:{
+      que:{
+        p:"Permite explorar objetos culturales y mini-mundos mediante realidad aumentada. Presenta información por capas para que el usuario aprenda mientras interactúa.",
+        items:[
+          "Objetos 3D con puntos de interés.",
+          "Exploración por pasos cortos.",
+          "Datos claros y visuales para no saturar.",
+          "Mini-retos de observación opcionales."
+        ]
+      },
+      como:{
+        p:"La experiencia guía desde el escaneo hasta la interacción. El usuario coloca el objeto y explora detalles a su ritmo.",
+        items:[
+          "Escanea superficie y coloca el objeto.",
+          "Rota y acerca para observar detalles.",
+          "Activa hotspots para información breve.",
+          "Completa mini-retos y guarda favoritos."
+        ]
+      },
+      beneficios:{
+        p:"Mejora retención al aprender con una experiencia concreta e inmersiva. Motiva curiosidad y exploración autónoma.",
+        items:[
+          "Incrementa interés por cultura y objetos.",
+          "Aprendizaje visual con alta retención.",
+          "Promueve preguntas y exploración.",
+          "Sesiones cortas y repetibles."
+        ]
+      },
+      contenido:{
+        p:"Catálogo ampliable de mini-museos y objetos 3D. Puedes agregar colecciones por tema.",
+        items:[
+          "Colecciones por tema y nivel.",
+          "Recorridos de 2 a 5 minutos.",
+          "Fichas informativas por pieza.",
+          "Actualizaciones con nuevos modelos."
+        ]
+      }
+    }
+  },
+  {
+    id:"dali",
+    name:"Rincón de Dalí",
+    dot:"d-purple",
+    kicker:"Creatividad",
+    subtitle:"Dibujo guiado y libre con herramientas simples para crear sin presión y con apoyo visual.",
+    kpis:[
+      {b:"Objetivo",s:"Creatividad, expresión y motricidad"},
+      {b:"Interacción",s:"Lienzo + herramientas claras"},
+      {b:"Enfoque",s:"Experiencia amable y visual"}
+    ],
+    video:{type:"local",src:"assets/video-dali.mp4"},
+    gallery:["assets/preview-dali.jpg"],
+    tabs:{
+      que:{
+        p:"Módulo creativo para dibujar y experimentar con actividades guiadas. Está hecho para que el usuario pueda crear con libertad, con apoyo opcional y controles grandes.",
+        items:[
+          "Modo libre y actividades guiadas.",
+          "Herramientas simples (lápiz, color, borrador).",
+          "Plantillas opcionales para iniciar rápido.",
+          "Guardado de resultados para seguimiento."
+        ]
+      },
+      como:{
+        p:"El usuario elige actividad o modo libre, dibuja y guarda. Las guías pueden activarse para hacer el proceso más fácil.",
+        items:[
+          "Selecciona plantilla o lienzo en blanco.",
+          "Dibuja con controles claros y grandes.",
+          "Activa guías por pasos si las necesitas.",
+          "Guarda y revisa tu progreso."
+        ]
+      },
+      beneficios:{
+        p:"Refuerza creatividad y coordinación. Es un espacio seguro para explorar sin frustración.",
+        items:[
+          "Desarrolla motricidad fina.",
+          "Mejora expresión emocional con arte.",
+          "Promueve constancia con retos simples.",
+          "Reduce ansiedad al crear con guías opcionales."
+        ]
+      },
+      contenido:{
+        p:"Plantillas y actividades por categoría. El catálogo puede crecer por paquetes.",
+        items:[
+          "Plantillas por tema (formas, animales, etc.).",
+          "Retos por pasos o por tiempo.",
+          "Galería local de trabajos.",
+          "Paquetes nuevos de actividades."
+        ]
+      }
+    }
+  },
+  {
+    id:"eco",
+    name:"EcoMágico",
+    dot:"d-teal",
+    kicker:"Exploración",
+    subtitle:"Aprendizaje por descubrimiento con interacción visual y retos cortos para mantener foco.",
+    kpis:[
+      {b:"Objetivo",s:"Curiosidad guiada y aprendizaje visual"},
+      {b:"Interacción",s:"Explora, toca, descubre"},
+      {b:"Enfoque",s:"Estímulo controlado y claridad"}
+    ],
+    video:{type:"none"},
+    gallery:["assets/preview-eco.jpg"],
+    tabs:{
+      que:{
+        p:"Exploras elementos y conceptos mediante interacción visual. El contenido se presenta por capas: primero lo básico, luego detalle, para mantener claridad.",
+        items:[
+          "Interacciones rápidas con elementos.",
+          "Descubrimiento por capas con información breve.",
+          "Micro-retos de reconocimiento y comparación.",
+          "Diseño pensado para mantener atención."
+        ]
+      },
+      como:{
+        p:"El usuario elige una escena, interactúa con elementos y completa retos cortos que refuerzan lo visto.",
+        items:[
+          "Elige tema o escena.",
+          "Interactúa con objetos destacados.",
+          "Completa retos (encuentra, compara, ordena).",
+          "Cierra con un resumen breve."
+        ]
+      },
+      beneficios:{
+        p:"Funciona muy bien para aprendizaje exploratorio. Mantiene foco con estímulos controlados y objetivos claros.",
+        items:[
+          "Desarrolla curiosidad guiada.",
+          "Refuerza atención y reconocimiento visual.",
+          "Reduce saturación con información por capas.",
+          "Mejora confianza al completar micro-retos."
+        ]
+      },
+      contenido:{
+        p:"Escenas por tema que se pueden ampliar con nuevos packs.",
+        items:[
+          "Escenas (hogar, naturaleza, ciudad, ciencia).",
+          "Elementos con fichas y retos.",
+          "Progreso por tema.",
+          "Actualizaciones con nuevos escenarios."
+        ]
+      }
+    }
+  },
+    {
+      id:"trazos",
+name:"Trazos Magicos",
+dot:"d-pink",
+kicker:"Trazado",
+subtitle:"Aprende a escribir números siguiendo guías visuales con el dedo o el mouse.",
+kpis:[
+  {b:"Objetivo",s:"Aprender escritura de números"},
+  {b:"Interacción",s:"Trazado guiado en pantalla"},
+  {b:"Enfoque",s:"Coordinación y memoria visual"}
+],
+video:{type:"none"},
+gallery:["assets/preview-trazos.jpg"],
+tabs:{
+  que:{
+    p:"Trazos Mágicos enseña a escribir números mediante guías visuales que el usuario sigue con el dedo o el mouse. Cada número aparece como una forma que debe ser recorrida para completar el ejercicio.",
+    items:[
+      "Números guiados para trazar paso a paso.",
+      "Área interactiva para practicar escritura.",
+      "Guías visuales que muestran la forma correcta.",
+      "Progreso automático al completar cada número."
+    ]
+  },
+  como:{
+    p:"El usuario observa el número en pantalla y lo traza siguiendo la línea punteada. Al completar la forma correctamente se desbloquea el siguiente número.",
+    items:[
+      "Observa el número mostrado.",
+      "Traza la forma siguiendo la guía.",
+      "Completa el número para avanzar.",
+      "Practica varias veces para mejorar precisión."
+    ]
+  },
+  beneficios:{
+    p:"Este módulo fortalece habilidades motoras finas y reconocimiento numérico mediante práctica visual y repetición guiada.",
+    items:[
+      "Mejora coordinación mano-ojo.",
+      "Refuerza reconocimiento de números.",
+      "Desarrolla memoria visual de formas.",
+      "Favorece aprendizaje temprano de escritura."
+    ]
+  },
+  contenido:{
+    p:"Incluye ejercicios de trazado para los primeros números con posibilidad de ampliar la biblioteca de prácticas.",
+    items:[
+      "Trazado guiado de números básicos.",
+      "Ejercicios repetibles para práctica.",
+      "Posibilidad de ampliar a letras o símbolos.",
+      "Actividades progresivas por dificultad."
+    ]
+  }
+}
+    }
+  ]
+
+const params=new URLSearchParams(location.search)
+const fallbackId=params.get("id")||"senales"
+const id=(() => {
+  const file=(location.pathname.split("/").pop()||"").toLowerCase()
+  const mapByFile={
+    "senales.html":"senales",
+    "logica.html":"logica",
+    "camin.html":"camin",
+    "dali.html":"dali",
+    "eco.html":"eco",
+    "trazos.html":"trazos"
+  }
+  return mapByFile[file] || fallbackId
+})()
+
+const title=document.getElementById("title")
+const subtitle=document.getElementById("subtitle")
+const kickerText=document.getElementById("kickerText")
+const dot=document.getElementById("dot")
+const kpis=document.getElementById("kpis")
+const tabs=document.getElementById("tabs")
+const panel=document.getElementById("panel")
+const gallery=document.getElementById("gallery")
+const videoWrap=document.getElementById("videoWrap")
+const videoLabel=document.getElementById("videoLabel")
+const videoHint=document.getElementById("videoHint")
+
+function setActiveTab(key){
+  tabs.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===key))
+}
+
+function fillPanel(mod,key){
+  const c=mod.tabs[key]
+  const items=(c.items||[]).map(x=>`<li>${x}</li>`).join("")
+  panel.innerHTML=`<p class="p">${c.p||""}</p><ul>${items}</ul>`
+}
+
+function fillKpis(mod){
+  kpis.innerHTML=""
+  mod.kpis.forEach(x=>{
+    const d=document.createElement("div")
+    d.className="kpi"
+    d.innerHTML=`<b>${x.b}</b><span>${x.s}</span>`
+    kpis.appendChild(d)
+  })
+}
+
+function fillGallery(mod){
+  gallery.innerHTML=""
+  const imgs=(mod.gallery||[]).filter(Boolean)
+  if(!imgs.length){
+    const d=document.createElement("div")
+    d.className="shot"
+    d.textContent="Foto pendiente"
+    d.style.gridColumn="1 / -1"
+    gallery.appendChild(d)
+    return
+  }
+  imgs.forEach(src=>{
+    const d=document.createElement("div")
+    d.className="shot"
+    const img=document.createElement("img")
+    img.src=src
+    img.alt=""
+    img.onerror=()=>{d.textContent="Foto pendiente"}
+    d.appendChild(img)
+    gallery.appendChild(d)
+  })
+}
+
+function fillVideo(mod){
+  videoWrap.innerHTML=""
+  videoLabel.textContent="Opcional"
+  videoHint.style.display="block"
+  if(!mod.video||mod.video.type==="none"){
+    videoWrap.innerHTML=`<div style="padding:18px;color:rgba(255,255,255,.80);font-weight:900;line-height:1.5">Video no asignado. Puedes agregar un .mp4 en assets o un embed de YouTube/Vimeo.</div>`
+    return
+  }
+  if(mod.video.type==="local"){
+    videoLabel.textContent="Archivo local"
+    videoWrap.innerHTML=`<video controls playsinline preload="metadata"><source src="${mod.video.src}" type="video/mp4"></video>`
+    return
+  }
+  if(mod.video.type==="youtube"){
+    videoLabel.textContent="YouTube"
+    videoHint.style.display="none"
+    videoWrap.innerHTML=`<iframe src="${mod.video.src}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
+    return
+  }
+}
+
+function loadModule(mid){
+  const mod=DATA.find(x=>x.id===mid)||DATA[0]
+  document.title=`NANU — ${mod.name}`
+  title.textContent=mod.name
+  subtitle.textContent=mod.subtitle
+  kickerText.textContent=mod.kicker
+  dot.className=`dot ${mod.dot}`
+  fillKpis(mod)
+  fillGallery(mod)
+  const key=tabs.querySelector(".tab.active")?.dataset.tab || "que"
+  fillPanel(mod,key)
+  fillVideo(mod)
+  return mod
+}
+
+let current=loadModule(id)
+
+tabs.addEventListener("click",(e)=>{
+  const t=e.target.closest(".tab")
+  if(!t)return
+  const key=t.dataset.tab
+  setActiveTab(key)
+  fillPanel(current,key)
+})
+
+function nav(delta){
+  const idx=DATA.findIndex(x=>x.id===current.id)
+  const next=DATA[(idx+delta+DATA.length)%DATA.length]
+  location.href = ROUTES[next.id] || "NANU.html"
+}
+
+document.getElementById("prevBtn").addEventListener("click",()=>nav(-1))
+document.getElementById("nextBtn").addEventListener("click",()=>nav(1))
+
+const backHome=document.getElementById("backHome")
+backHome.addEventListener("click",()=>{location.href=HOME})
+backHome.addEventListener("keydown",(e)=>{
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();location.href=HOME}
+})
+</script>
+</body>
+</html>
