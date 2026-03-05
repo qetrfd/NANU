@@ -749,7 +749,7 @@ tabs.addEventListener("click",(e)=>{
 function nav(delta){
   const idx=DATA.findIndex(x=>x.id===current.id)
   const next=DATA[(idx+delta+DATA.length)%DATA.length]
-  location.href = ROUTES[next.id] || "NANU.html"
+  location.href = ROUTES[next.id] || "index.html"
 }
 
 document.getElementById("prevBtn").addEventListener("click",()=>nav(-1))
