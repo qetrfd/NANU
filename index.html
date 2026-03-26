@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>NANU — Aprende, crea y explora</title>
+<style>
+:root{
+  --bg1:#5a2aa8;
+  --bg2:#3b2db2;
+  --text:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.72);
+  --accent:#ff4fd8;
+  --radius:22px;
+  --shadow:0 20px 60px rgba(0,0,0,.22);
+  --glass:rgba(255,255,255,.10);
+  --stroke:rgba(255,255,255,.16);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:ui-rounded,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+body{
+  color:var(--text);
+  background:
+    radial-gradient(1000px 700px at 20% 10%,rgba(255,255,255,.10),transparent 55%),
+    radial-gradient(900px 700px at 85% 20%,rgba(255,255,255,.08),transparent 60%),
+    linear-gradient(180deg,var(--bg1),var(--bg2));
+  overflow:hidden;
+}
+
+.page{
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity .28s ease, transform .28s ease;
+}
+.page.ready{
+  opacity:1;
+  transform:translateY(0);
+}
+.page.exiting{
+  opacity:0;
+  transform:translateY(10px);
+}
+
+.bg-orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.orb{
+  position:absolute;border-radius:999px;opacity:.14;mix-blend-mode:screen;will-change:transform;
+  background:
+    radial-gradient(circle at 30% 30%,rgba(255,255,255,.65),rgba(255,255,255,0) 60%),
+    radial-gradient(circle at 70% 70%,rgba(255,255,255,.35),rgba(255,255,255,0) 55%);
+  box-shadow:0 0 60px rgba(255,255,255,.08);
+  animation:float 10s ease-in-out infinite;
+}
+.orb.c1{background:radial-gradient(circle at 30% 30%,rgba(255,82,182,.70),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+.orb.c2{background:radial-gradient(circle at 30% 30%,rgba(64,214,255,.75),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+.orb.c3{background:radial-gradient(circle at 30% 30%,rgba(142,255,98,.70),rgba(255,255,255,0) 60%),radial-gradient(circle at 70% 70%,rgba(255,255,255,.25),rgba(255,255,255,0) 55%)}
+@keyframes float{
+  0%,100%{transform:translate3d(var(--x1),var(--y1),0) scale(1)}
+  50%{transform:translate3d(var(--x2),var(--y2),0) scale(1.06)}
+}
+
+.wrap{
+  position:relative;
+  z-index:1;
+  min-height:100vh;
+  scroll-snap-type:y mandatory;
+  overflow-y:auto;
+  height:100vh;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+
+.section{
+  min-height:100vh;
+  padding:84px 22px 56px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  scroll-snap-align:start;
+}
+
+.topbar{
+  position:fixed;
+  top:14px;
+  left:16px;
+  right:16px;
+  z-index:6;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  pointer-events:none;
+}
+.topbar>*{pointer-events:auto}
+
+.brand-mini{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.07);
+  backdrop-filter:blur(10px);
+  cursor:pointer;
+  user-select:none;
+}
+.brand-mini .logo-mini{
+  width:34px;height:34px;border-radius:12px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.12);
+  display:grid;place-items:center;
+  overflow:hidden;
+}
+.brand-mini .logo-mini img{width:100%;height:100%;object-fit:cover;filter:drop-shadow(0 10px 16px rgba(0,0,0,.18))}
+.brand-mini .name{font-weight:950;letter-spacing:.4px;line-height:1}
+.brand-mini .sub{font-size:12px;color:var(--muted);font-weight:800;margin-top:2px}
+
+.menu{position:relative}
+.menu-btn{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.07);
+  backdrop-filter:blur(10px);
+  color:var(--text);
+  font-weight:900;
+  cursor:pointer;
+  transition:transform .14s ease,background .14s ease;
+}
+.menu-btn:hover{transform:scale(1.02);background:rgba(255,255,255,.10)}
+.menu-btn:active{transform:scale(.99)}
+.menu-panel{
+  position:absolute;
+  right:0;
+  top:52px;
+  width:min(340px,86vw);
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(30,10,70,.26);
+  backdrop-filter:blur(16px);
+  box-shadow:0 24px 70px rgba(0,0,0,.28);
+  overflow:hidden;
+  transform:translateY(-6px);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .18s ease,transform .18s ease;
+}
+.menu.open .menu-panel{opacity:1;transform:translateY(0);pointer-events:auto}
+.menu-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 14px;
+  color:rgba(255,255,255,.92);
+  text-decoration:none;
+  font-weight:900;
+  border-top:1px solid rgba(255,255,255,.10);
+}
+.menu-item:first-child{border-top:none}
+.menu-item:hover{background:rgba(255,255,255,.06)}
+.menu-dot{width:10px;height:10px;border-radius:999px;box-shadow:0 0 18px rgba(255,255,255,.18)}
+.d-pink{background:rgba(255,82,182,.95)}
+.d-cyan{background:rgba(64,214,255,.95)}
+.d-green{background:rgba(142,255,98,.95)}
+.d-yellow{background:rgba(255,222,89,.95)}
+.d-purple{background:rgba(190,120,255,.95)}
+.d-teal{background:rgba(90,255,220,.95)}
+
+.scroll-ui{
+  position:fixed;
+  left:14px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:5;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(10px);
+  pointer-events:none;
+}
+.pill{width:8px;height:34px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden;position:relative}
+.pill>i{position:absolute;inset:0;transform:translateY(100%);background:rgba(255,255,255,.75);transition:transform .35s ease}
+.pill.active>i{transform:translateY(0%)}
+
+.hero{
+  width:min(1200px,94vw);
+  display:grid;
+  grid-template-columns:1.15fr .85fr;
+  gap:28px;
+  align-items:center;
+}
+.hero-left{display:flex;flex-direction:column;gap:16px;padding-right:10px}
+.hero-left h1{margin:0;font-size:clamp(52px,6.2vw,86px);letter-spacing:.8px;line-height:1}
+.hero-left .tag{font-size:16px;color:var(--muted);font-weight:800}
+.hero-left .lead{margin:6px 0 0;font-weight:750;color:rgba(255,255,255,.82);max-width:54ch;line-height:1.55}
+.hero-right{display:grid;place-items:center}
+.logo{
+  width:min(360px,36vw);
+  aspect-ratio:1/1;
+  border-radius:34px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 30px 90px rgba(0,0,0,.20);
+  backdrop-filter:blur(10px);
+  display:grid;
+  place-items:center;
+}
+.logo img{width:100%;height:100%;object-fit:cover;border-radius:34px;display:block;filter:drop-shadow(0 16px 26px rgba(0,0,0,.22))}
+.headline{margin:14px 0 0;font-size:clamp(30px,4.2vw,56px);font-weight:950;letter-spacing:.2px;line-height:1.05}
+.cta{
+  width:min(760px,92vw);
+  margin-top:18px;
+  padding:14px 14px;
+  border-radius:999px;
+  background:rgba(255,255,255,.92);
+  color:rgba(40,10,90,.95);
+  font-weight:950;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  border:none;
+  box-shadow:0 18px 48px rgba(0,0,0,.24);
+  transition:transform .16s ease,box-shadow .16s ease;
+}
+.cta span{color:var(--accent)}
+.cta:hover{transform:translateY(-1px);box-shadow:0 22px 60px rgba(0,0,0,.28)}
+.cta:active{transform:translateY(1px) scale(.99)}
+
+.pane{
+  width:min(1100px,94vw);
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:18px;
+  align-items:stretch;
+}
+
+#s2 .pane{
+  grid-template-columns:1fr;
+}
+
+.glass{
+  border-radius:var(--radius);
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(12px);
+}
+.module{
+  padding:22px 20px;
+  transform:translateY(14px);
+  opacity:0;
+  transition:transform .6s cubic-bezier(.2,.8,.2,1),opacity .6s ease;
+}
+.module.is-visible{transform:translateY(0);opacity:1}
+.module h2{margin:0 0 10px;font-size:clamp(26px,3vw,40px);letter-spacing:.2px}
+.module p{margin:0;color:rgba(255,255,255,.80);font-weight:750;line-height:1.55;font-size:15px}
+
+.kpis{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{padding:12px 12px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
+.kpi b{display:block;font-size:14px;letter-spacing:.2px}
+.kpi span{display:block;font-size:12px;color:rgba(255,255,255,.75);font-weight:800;margin-top:4px}
+
+.chip-row{margin-top:14px;display:flex;flex-wrap:wrap;gap:10px}
+.chip{padding:10px 12px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.86);font-weight:900;font-size:13px}
+
+.preview{
+  padding:0;
+  position:relative;
+  overflow:hidden;
+  min-height:unset;
+  height:100%;
+  display:block;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+}
+.preview img,
+.preview video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 16px 42px rgba(0,0,0,.25);
+  display:block;
+}
+.preview .overlay{position:absolute;inset:0;border-radius:22px;background:linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,.22));pointer-events:none}
+.placeholder{display:none}
+
+.modules-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-top:14px;
+}
+.card{
+  padding:16px 16px;
+  border-radius:18px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  cursor:pointer;
+  transition:transform .16s ease, background .16s ease, border-color .16s ease;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-height:132px;
+}
+.card:hover{transform:translateY(-3px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+.card:active{transform:translateY(1px)}
+.card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.badge{width:12px;height:12px;border-radius:999px;box-shadow:0 0 18px rgba(255,255,255,.18)}
+.card h3{margin:0;font-size:18px;letter-spacing:.2px}
+.card p{margin:0;color:rgba(255,255,255,.78);font-weight:800;line-height:1.4;font-size:13px}
+
+@media (max-width:980px){
+  .hero{grid-template-columns:1fr;gap:18px}
+  .hero-left{padding-right:0;align-items:center;text-align:center}
+  .hero-left .lead{max-width:60ch}
+  .logo{width:min(360px,78vw)}
+  .pane{grid-template-columns:1fr}
+  .preview{min-height:260px}
+  .kpis{grid-template-columns:1fr}
+  .scroll-ui{left:auto;right:12px}
+  .modules-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+<div class="page" id="page">
+  <div class="bg-orbs" id="bgOrbs"></div>
+
+  <header class="topbar">
+    <div class="brand-mini" role="button" tabindex="0" id="homeBtn">
+      <div class="logo-mini"><img src="assets/nanu-logo.png" alt=""></div>
+      <div>
+        <div class="name">NANU</div>
+        <div class="sub">Aprende, crea y explora</div>
+      </div>
+    </div>
+
+    <div class="menu" id="menu">
+      <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-haspopup="true">
+        <span>Módulos</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7 10l5 5 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
+        </svg>
+      </button>
+
+      <div class="menu-panel" id="menuPanel" role="menu">
+        <a class="menu-item" href="senales.html" data-route="senales.html"><span class="menu-dot d-cyan"></span>Señales que hablan</a>
+        <a class="menu-item" href="logica.html" data-route="logica.html"><span class="menu-dot d-green"></span>Cerebro Lógico</a>
+        <a class="menu-item" href="camin.html" data-route="camin.html"><span class="menu-dot d-yellow"></span>CaminArte</a>
+        <a class="menu-item" href="dali.html" data-route="dali.html"><span class="menu-dot d-purple"></span>Rincón de Dalí</a>
+        <a class="menu-item" href="eco.html" data-route="eco.html"><span class="menu-dot d-teal"></span>EcoMágico</a>
+        <a class="menu-item" href="trazos.html" data-route="mundos.html"><span class="menu-dot d-pink"></span>Trazos Magicos</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="scroll-ui" id="scrollUI" aria-hidden="true">
+    <div class="pill active"><i></i></div>
+    <div class="pill"><i></i></div>
+    <div class="pill"><i></i></div>
+    <div class="pill"><i></i></div>
+    <div class="pill"><i></i></div>
+    <div class="pill"><i></i></div>
+    <div class="pill"><i></i></div>
+    <div class="pill"><i></i></div>
+    <div class="pill"><i></i></div>
+  </div>
+
+  <main class="wrap" id="wrap">
+
+  <section class="section" id="s0" data-title="Portada">
+    <div class="hero">
+      <div class="hero-left">
+        <div class="tag">Explora, aprende y crea</div>
+        <h1>NANU</h1>
+        <p class="lead">
+          Plataforma educativa inclusiva con módulos cortos e interactivos para comunicación, lógica, cultura y creatividad.
+          Diseñada para una experiencia clara, visual y guiada.
+        </p>
+        <div class="headline">Aprende, crea y explora a tu ritmo</div>
+        <button class="cta" id="continueBtn"><span>Continuar</span></button>
+      </div>
+
+      <div class="hero-right">
+        <div class="logo"><img src="assets/nanu-logo.png" alt="Logo NANU"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s1" data-title="Descripción">
+    <div class="pane">
+      <div class="glass module">
+        <h2>¿Qué es NANU?</h2>
+        <p>
+          NANU es una app educativa inclusiva diseñada para que niñas, niños y familias aprendan a su ritmo mediante experiencias breves, visuales y guiadas.
+          Integra actividades de comunicación, lógica, creatividad, cultura y exploración en un solo lugar, con una interfaz clara y amable.
+          Cada módulo refuerza habilidades específicas, ofrece retroalimentación inmediata y mantiene la motivación con retos cortos y progreso.
+        </p>
+        <div class="kpis">
+          <div class="kpi"><b>Accesibilidad</b><span>Diseño legible y amigable</span></div>
+          <div class="kpi"><b>Aprendizaje activo</b><span>Práctica y exploración guiada</span></div>
+          <div class="kpi"><b>Modular</b><span>6 experiencias con objetivos distintos</span></div>
+        </div>
+        <div class="chip-row">
+          <div class="chip">Inclusión</div>
+          <div class="chip">Progreso</div>
+          <div class="chip">Interactividad</div>
+          <div class="chip">Experiencias cortas</div>
+        </div>
+      </div>
+
+      <div class="glass preview module">
+        <video autoplay muted loop playsinline>
+        <source src="assets/about.mp4" type="video/mp4">
+        </video>
+        <div class="overlay"></div>
+      </div>
+    </div>
+  </section>
+  
+
+  <section class="section" id="s2" data-title="Módulos">
+    <div class="pane">
+      <div class="glass module">
+        <h2>Directorio de módulos</h2>
+        <p>Entra a cada módulo para ver su descripción completa.</p>
+        <div class="modules-grid" id="modulesGrid"></div>
+        <div class="chip-row">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s3" data-title="Señales que hablan">
+    <div class="pane">
+      <div class="glass module">
+        <h2>Señales que hablan</h2>
+        <p>
+          Reconoce señas de la mano usando la cámara para aprender el alfabeto en lengua de señas.
+          Permite practicar letras, formar palabras y recibir retroalimentación visual en tiempo real
+          para reforzar comunicación y accesibilidad.
+        </p>      
+        <div class="chip-row">
+          <div class="chip">Reconocimiento</div>
+          <div class="chip">Lengua de señas</div>
+          <div class="chip">Práctica</div>
+          <div class="chip">Accesibilidad</div>
+      </div>
+      </div>
+      <div class="glass preview module">
+        <video autoplay muted loop playsinline>
+          <source src="assets/preview-signs.mp4" type="video/mp4">
+        </video>
+        <div class="overlay"></div>
+        <div class="placeholder">Foto pendiente</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s4" data-title="Cerebro Lógico">
+    <div class="pane">
+      <div class="glass module">
+        <h2>Cerebro Lógico</h2>
+        <p>
+Ejercicios interactivos diseñados para desarrollar pensamiento lógico.
+Incluye retos de patrones, secuencias, memoria visual y resolución de problemas
+que ayudan a entrenar habilidades cognitivas de forma progresiva.
+        </p>      
+        <div class="chip-row">
+          <div class="chip">Retos</div>
+          <div class="chip">Patrones</div>
+          <div class="chip">Memoria</div>
+          <div class="chip">Progreso</div>
+        </div>
+      </div>
+      <div class="glass preview module">
+        <video autoplay muted loop playsinline>
+<source src="assets/preview-logic.mp4" type="video/mp4">
+</video>
+        <div class="overlay"></div>
+        <div class="placeholder">Foto pendiente</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s5" data-title="CaminArte">
+    <div class="pane">
+      <div class="glass module">
+        <h2>CaminArte</h2>
+        <p>
+Explora elementos culturales mediante modelos 3D interactivos.
+Permite observar objetos desde distintos ángulos, aprender su historia
+y descubrir detalles de forma visual e intuitiva.
+        </p>
+        <div class="chip-row">
+          <div class="chip">AR</div>
+          <div class="chip">Cultura</div>
+          <div class="chip">3D</div>
+          <div class="chip">Exploración</div>
+        </div>
+      </div>
+      <div class="glass preview module">
+        <video autoplay muted loop playsinline>
+<source src="assets/preview-ar.mp4" type="video/mp4">
+</video>
+        <div class="overlay"></div>
+        <div class="placeholder">Foto pendiente</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s6" data-title="Rincón de Dalí">
+    <div class="pane">
+      <div class="glass module">
+        <h2>Rincón de Dalí</h2>
+        <p>
+Espacio creativo para dibujar libremente usando herramientas digitales.
+Incluye pinceles, colores y opciones para experimentar con formas
+y desarrollar expresión artística.
+</p>      
+        <div class="chip-row">
+          <div class="chip">Dibujo</div>
+          <div class="chip">Creatividad</div>
+          <div class="chip">Guías</div>
+          <div class="chip">Exploración</div>
+        </div>
+      </div>
+      <div class="glass preview module">
+        <video autoplay muted loop playsinline>
+<source src="assets/preview-dali.mp4" type="video/mp4">
+</video>
+        <div class="overlay"></div>
+        <div class="placeholder">Foto pendiente</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s7" data-title="EcoMágico">
+    <div class="pane">
+      <div class="glass module">
+        <h2>EcoMágico</h2>
+      <p>
+Practica la escritura de números siguiendo guías visuales.
+El usuario traza cada número con el dedo o el mouse para mejorar
+coordinación motriz, memoria visual y reconocimiento numérico.
+</p>
+        <div class="chip-row">
+          <div class="chip">Exploración</div>
+          <div class="chip">Descubrimiento</div>
+          <div class="chip">Curiosidad</div>
+          <div class="chip">Aprendizaje</div>
+        </div>
+      </div>
+      <div class="glass preview module">
+       <video autoplay muted loop playsinline>
+<source src="assets/preview-eco.mp4" type="video/mp4">
+</video>
+        <div class="overlay"></div>
+        <div class="placeholder">Foto pendiente</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="s8" data-title="Trazos Magicos">
+    <div class="pane">
+      <div class="glass module">
+        <h2>Trazos Magicos</h2>
+        <p>
+Practica la escritura de números siguiendo guías visuales.
+El usuario traza cada número con el dedo o el mouse para mejorar
+coordinación motriz, memoria visual y reconocimiento numérico.
+</p>
+        <div class="chip-row">
+          <div class="chip">Cuentos</div>
+          <div class="chip">Audio</div>
+          <div class="chip">Comprensión</div>
+          <div class="chip">Interacción</div>
+        </div>
+      </div>
+      <div class="glass preview module">
+        <video autoplay muted loop playsinline>
+<source src="assets/preview-trazos.mp4" type="video/mp4">
+</video>
+        <div class="overlay"></div>
+        <div class="placeholder">Foto pendiente</div>
+      </div>
+    </div>
+  </section>
+
+  
+<section class="section" id="s9" data-title="Política de privacidad">
+  <div class="pane">
+    <div class="glass module">
+      <h2>Política de privacidad</h2>
+      <p>
+        En NANU, respetamos tu privacidad. No recopilamos datos personales sensibles sin consentimiento.
+        La información recolectada se utiliza únicamente para mejorar la experiencia del usuario.
+        No compartimos datos con terceros.
+      </p>
+      <p>
+        Algunas funciones pueden usar la cámara o almacenamiento del dispositivo para operar correctamente.
+        Estos permisos se utilizan exclusivamente dentro de la aplicación.
+      </p>
+      <p>
+        Si tienes dudas sobre tu información, puedes contactarnos para más detalles.
+      </p>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+const page=document.getElementById("page")
+requestAnimationFrame(()=>page.classList.add("ready"))
+
+function goSmooth(url){
+  page.classList.add("exiting")
+  setTimeout(()=>{window.location.href=url},220)
+}
+
+const wrap=document.getElementById("wrap")
+const pills=document.querySelectorAll(".pill")
+const sections=[...document.querySelectorAll(".section")]
+const modules=document.querySelectorAll(".module")
+const bgOrbs=document.getElementById("bgOrbs")
+const menu=document.getElementById("menu")
+const menuBtn=document.getElementById("menuBtn")
+const homeBtn=document.getElementById("homeBtn")
+const modulesGrid=document.getElementById("modulesGrid")
+
+function rand(min,max){return Math.random()*(max-min)+min}
+
+for(let i=0;i<14;i++){
+  const d=document.createElement("div")
+  d.className="orb "+(i%3===0?"c1":i%3===1?"c2":"c3")
+  const size=rand(180,520)
+  d.style.width=size+"px"
+  d.style.height=size+"px"
+  d.style.left=rand(-10,110)+"vw"
+  d.style.top=rand(-10,110)+"vh"
+  d.style.setProperty("--x1",rand(-40,40)+"px")
+  d.style.setProperty("--y1",rand(-40,40)+"px")
+  d.style.setProperty("--x2",rand(-80,80)+"px")
+  d.style.setProperty("--y2",rand(-80,80)+"px")
+  d.style.animationDuration=rand(8,16)+"s"
+  d.style.animationDelay=(-rand(0,12))+"s"
+  bgOrbs.appendChild(d)
+}
+
+document.getElementById("continueBtn").addEventListener("click",()=>{
+  document.getElementById("s1").scrollIntoView({behavior:"smooth"})
+})
+
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach(ent=>{if(ent.isIntersecting)ent.target.classList.add("is-visible")})
+},{threshold:0.18})
+modules.forEach(m=>obs.observe(m))
+
+function setMenu(open){
+  menu.classList.toggle("open",open)
+  menuBtn.setAttribute("aria-expanded",open?"true":"false")
+}
+menuBtn.addEventListener("click",(e)=>{
+  e.stopPropagation()
+  setMenu(!menu.classList.contains("open"))
+})
+document.addEventListener("click",(e)=>{
+  if(!menu.contains(e.target)) setMenu(false)
+})
+document.addEventListener("keydown",(e)=>{
+  if(e.key==="Escape") setMenu(false)
+})
+
+document.querySelectorAll(".menu-item").forEach(a=>{
+  a.addEventListener("click",(e)=>{
+    e.preventDefault()
+    setMenu(false)
+
+    const url = a.getAttribute("data-route") || a.getAttribute("href") || ""
+
+    const map = {
+      "senales.html": "s3",
+      "logica.html":  "s4",
+      "camin.html":   "s5",
+      "dali.html":    "s6",
+      "eco.html":     "s7",
+      "mundos.html":  "s8"
+    }
+
+    const targetId = map[url] || "s3"
+    document.getElementById(targetId).scrollIntoView({ behavior:"smooth" })
+  })
+})
+
+homeBtn.addEventListener("click",()=>{document.getElementById("s0").scrollIntoView({behavior:"smooth"})})
+homeBtn.addEventListener("keydown",(e)=>{
+  if(e.key==="Enter"||e.key===" "){
+    e.preventDefault()
+    document.getElementById("s0").scrollIntoView({behavior:"smooth"})
+  }
+})
+
+const DATA=[
+  {id:"senales",name:"Señales que hablan",dot:"d-cyan",short:"Cámara + detección para practicar señas y formar palabras con retroalimentación.",go:"senales.html"},
+  {id:"logica",name:"Cerebro Lógico",dot:"d-green",short:"Retos visuales para lógica, patrones, memoria y toma de decisiones.",go:"logica.html"},
+  {id:"camin",name:"CaminArte",dot:"d-yellow",short:"AR + cultura con objetos 3D y exploración guiada.",go:"camin.html"},
+  {id:"dali",name:"Rincón de Dalí",dot:"d-purple",short:"Dibujo y creatividad con herramientas simples y actividades guiadas.",go:"dali.html"},
+  {id:"eco",name:"EcoMágico",dot:"d-teal",short:"Exploración guiada para descubrir objetos y conceptos de forma visual.",go:"eco.html"},
+  {id:"mundos",name:"Trazos Magicos",dot:"d-pink",short:"Aprende números trazándolos con el dedo o el mouse mediante ejercicios interactivos.",go:"trazos.html"}
+]
+
+function renderDirectory(){
+  modulesGrid.innerHTML=""
+  DATA.forEach(m=>{
+    const card=document.createElement("div")
+    card.className="card"
+    card.tabIndex=0
+    card.innerHTML=`
+      <div class="card-top">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="badge ${m.dot}"></span>
+          <h3>${m.name}</h3>
+        </div>
+        <span style="opacity:.85;font-weight:950">↗</span>
+      </div>
+      <p>${m.short}</p>
+    `
+    const go=()=>{goSmooth(m.go)}
+    card.addEventListener("click",(e)=>{e.preventDefault();go()})
+    card.addEventListener("keydown",(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})
+    modulesGrid.appendChild(card)
+  })
+}
+renderDirectory()
+
+const secObs = new IntersectionObserver((entries) => {
+  const visible = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
+  if (!visible) return
+  const idx = sections.indexOf(visible.target)
+  pills.forEach((p, i) => p.classList.toggle("active", i === idx))
+  const t = visible.target.dataset.title
+  document.title = t ? `NANU — ${t}` : "NANU — Aprende, crea y explora"
+}, { threshold: [0.35, 0.55, 0.7] })
+sections.forEach(s => secObs.observe(s))
+</script>
+</body>
+</html>
