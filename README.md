@@ -1,132 +1,41 @@
-# NANU — Plataforma de Aprendizaje Interactivo
+# NANU
 
-**NANU** es una plataforma web interactiva diseñada para apoyar el aprendizaje mediante actividades visuales, creativas y cognitivas.
-El proyecto integra módulos educativos enfocados en lógica, creatividad, exploración cultural y desarrollo de habilidades.
+Sitio oficial de NANU, una app educativa con experiencias de arte, lógica, sonido,
+motricidad y exploración cultural.
 
-El objetivo es crear una experiencia de aprendizaje accesible, visual y motivadora.
+## Experiencias
 
----
+- **CaminArte:** exploración de piezas culturales y científicas en 3D.
+- **Cerebro Lógico:** patrones, secuencias y resolución de retos.
+- **Señales:** asociación de símbolos y significados cotidianos.
+- **Trazos:** actividades para coordinación y motricidad fina.
+- **Rincón de Dalí:** juego creativo con forma y color.
+- **EcoMágico:** exploración auditiva y conciencia ambiental.
 
-# Características principales
+## Desarrollo local
 
-* Módulos interactivos de aprendizaje
-* Experiencias visuales y multimedia
-* Visualización de modelos 3D
-* Interfaz moderna con animaciones
-* Diseño adaptable para distintos dispositivos
-
----
-
-# Módulos del sistema
-
-## CaminArte
-
-Exploración cultural mediante modelos 3D interactivos.
-
-Permite visualizar objetos culturales y científicos en tres dimensiones para fomentar el aprendizaje visual.
-
-Ejemplos de piezas:
-
-* Alebrije
-* Saturn V
-* Curiosity Rover
-* Catedral histórica
-
----
-
-## Cerebro Lógico
-
-Juegos y ejercicios enfocados en pensamiento lógico.
-
-Actividades:
-
-* patrones
-* secuencias
-* comparación
-* resolución de problemas
-
----
-
-## Señales
-
-Aprendizaje visual de símbolos y señales mediante interacción gráfica.
-
----
-
-## Trazos
-
-Actividades de motricidad fina mediante ejercicios de trazado y dibujo.
-
----
-
-## Rincón de Dalí
-
-Espacio creativo para experimentar con dibujo y color.
-
-Promueve:
-
-* creatividad
-* expresión artística
-* coordinación motriz
-
----
-
-## EcoMágico
-
-Módulo orientado a la conciencia ambiental y exploración de la naturaleza.
-
----
-
-# Tecnologías utilizadas
-
-* HTML5
-* CSS3
-* JavaScript
-* model-viewer (visualización 3D)
-* GitHub Pages
-
----
-
-# Estructura del proyecto
-
-```
-NANU
-│
-├── index.html
-├── camin.html
-├── dali.html
-├── eco.html
-├── logica.html
-├── senales.html
-├── trazos.html
-│
-└── assets
-    ├── modelos 3D
-    ├── videos
-    └── imágenes
+```bash
+npm install
+npm run dev
 ```
 
----
+Para validar la versión de producción:
 
-# Demo
+```bash
+npm run build
+```
 
-El proyecto está disponible públicamente en:
+## Tecnología
 
-https://qetrfd.github.io/NANU/
+- React + TypeScript
+- Tailwind CSS
+- Vite
+- Model Viewer para experiencias 3D
+- GitHub Actions y GitHub Pages
 
----
+## Enlaces
 
-# Autor
+- [Sitio web](https://qetrfd.github.io/NANU/)
+- [NANU en App Store](https://apps.apple.com/vn/app/nanu/id6761140863)
 
-Desarrollado por:
-
-**Fernando Santillán Rodríguez**
-
-Proyecto enfocado en el desarrollo de herramientas educativas interactivas.
-
----
-
-# Licencia
-
-Este proyecto se distribuye con fines educativos y de investigación.
-
+Desarrollado por Fernando Santillán Rodríguez.
