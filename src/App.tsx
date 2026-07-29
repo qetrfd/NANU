@@ -5,6 +5,7 @@ import { Hero } from './components/Hero'
 import { ExperienceCard } from './components/ExperienceCard'
 import { ExperienceModal } from './components/ExperienceModal'
 import { AppStoreButton } from './components/AppStoreButton'
+import { Privacy } from './components/Privacy'
 import { experiences, type Experience } from './data/experiences'
 
 function App() {
@@ -91,6 +92,8 @@ function App() {
           </div>
         </section>
 
+        <Privacy />
+
         <section className="download section-wrap">
           <div className="download-card">
             <img src="assets/nanu-logo.png" alt="" />
@@ -105,7 +108,7 @@ function App() {
 
       <footer>
         <a className="brand brand--footer" href="#inicio"><img src="assets/nanu-logo.png" alt="" /><span>NANU</span></a>
-        <p>Aprender, crear y explorar.</p>
+        <p><a href="#privacidad">Política de privacidad</a></p>
         <p>© {new Date().getFullYear()} NANU</p>
       </footer>
 

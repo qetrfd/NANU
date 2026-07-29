@@ -17,6 +17,7 @@ export function Header() {
         <a href="#experiencias" onClick={close}>Experiencias</a>
         <a href="#metodo" onClick={close}>Cómo aprende</a>
         <a href="#familias" onClick={close}>Para familias</a>
+        <a href="#privacidad" onClick={close}>Privacidad</a>
         <div className="nav-store"><AppStoreButton compact /></div>
       </nav>
 
